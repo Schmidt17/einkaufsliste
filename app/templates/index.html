@@ -1,6 +1,12 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>Einkaufsliste</title>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="https://picluster.a-h.wtf/einkaufsliste/static/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://picluster.a-h.wtf/einkaufsliste/static/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://picluster.a-h.wtf/einkaufsliste/static/img/favicon-16x16.png">
+    <link rel="manifest" href="https://picluster.a-h.wtf/einkaufsliste/static/img/site.webmanifest">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -11,44 +17,55 @@
 </head>
 <body>
     <header>        
-        <div class="container">        
-            <div class="row valign-wrapper">
-                <div class="col s2">
-                    <a href='#' data-target='slide-out' class='sidenav-trigger hide-on-large-only'><i class='medium material-icons'>menu</i></a>
-                </div>            
-                <div class="col s10 m8 offset-m2">
-                    <h2 class="header">Einkaufsliste</h2>
+        
+    </header>
+    
+    <main>
+        <div class="container">
+            <div class="row">
+                <div class="col s12 l8 offset-l2">
+                    <div class="card s12 item-card">
+                        <div class="card-content">
+                            <span class="card-title">Butter</span>
+                            <div class="chip green-text green lighten-5">Supermarkt</div>
+                        </div>
+                    </div>
+
+                    <div class="card s12 item-card">
+                        <div class="card-content">
+                            <span class="card-title">Shampoo</span>
+                            <div class="chip green-text green lighten-5">Supermarkt</div>
+                            <div class="chip blue-text blue lighten-5">Drogerie</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        
-        <ul id="slide-out" class="sidenav sidenav-fixed">
-        {% for listname in listnames %}
-            <li><a href="#!">{{ listname }}</a></li>
-        {% endfor %}
-    
-            <li class="add">
-                <div class="add-list-wrapper">
-                    <input id="add-listname" placeholder="Neue Liste"></input><i class='small material-icons add-list-trigger'>add</i>
-                </div>
-            <li>
-        </ul>
-    </header>
-    <main>
-        <div class="container">
-        
-
-        </div>
-
     </main>
 
     <script type="text/javascript" src="https://picluster.a-h.wtf/einkaufsliste/static/js/materialize.min.js"></script>
+    
     <script>
       document.addEventListener('DOMContentLoaded', function() {
           var elems = document.querySelectorAll('.sidenav');
           var instances = M.Sidenav.init(elems);
+
+          document.addEventListener('DOMContentLoaded', function() {
+            var elems = document.querySelectorAll('.chips');
+            var instances = M.Chips.init(elems, options);
+          });
+
+          var itemCards = document.querySelectorAll('.item-card');
+          itemCards.forEach((card) => card.addEventListener('click', function() {
+                this.classList.toggle('grey');
+                this.classList.toggle('lighten-2');
+                this.classList.toggle('grey-text');
+                this.querySelector('.card-title').classList.toggle('line-through');
+              })
+          );
+
       });
+      
     </script>
     
 </body>
