@@ -1,0 +1,31 @@
+header, main, footer {
+    padding-left: 300px;
+}
+
+@media only screen and (max-width : 992px) {
+    header, main, footer {
+        padding-left: 0;
+    }
+}
+
+li.add {
+    text-align: center;    
+}
+
+a.add-list {
+    text-align: center;
+}
+
+i.add-list-trigger {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+}
+
+#add-listname {
+    padding-left: 30px;
+    padding-right: 40px;
+}
+
+#slide-out {
+}

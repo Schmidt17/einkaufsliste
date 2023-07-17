@@ -1,0 +1,55 @@
+<html>
+<head>
+    <title>Einkaufsliste</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://picluster.a-h.wtf/einkaufsliste/static/css/materialize.min.css" type="text/css">
+    <link rel="stylesheet" href="https://picluster.a-h.wtf/einkaufsliste/static/css/main.css" type="text/css">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>        
+</head>
+<body>
+    <header>        
+        <div class="container">        
+            <div class="row valign-wrapper">
+                <div class="col s2">
+                    <a href='#' data-target='slide-out' class='sidenav-trigger hide-on-large-only'><i class='medium material-icons'>menu</i></a>
+                </div>            
+                <div class="col s10 m8 offset-m2">
+                    <h2 class="header">Einkaufsliste</h2>
+                </div>
+            </div>
+        </div>
+        
+        
+        <ul id="slide-out" class="sidenav sidenav-fixed">
+        {% for listname in listnames %}
+            <li><a href="#!">{{ listname }}</a></li>
+        {% endfor %}
+    
+            <li class="add">
+                <div class="add-list-wrapper">
+                    <input id="add-listname" placeholder="Neue Liste"></input><i class='small material-icons add-list-trigger'>add</i>
+                </div>
+            <li>
+        </ul>
+    </header>
+    <main>
+        <div class="container">
+        
+
+        </div>
+
+    </main>
+
+    <script type="text/javascript" src="https://picluster.a-h.wtf/einkaufsliste/static/js/materialize.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          var elems = document.querySelectorAll('.sidenav');
+          var instances = M.Sidenav.init(elems);
+      });
+    </script>
+    
+</body>
+</html>
