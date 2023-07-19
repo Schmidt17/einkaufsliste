@@ -1,10 +1,20 @@
 from flask import Flask, render_template, request
 import redis
 import re
+import os
+
+#print(type(os.environ['FLASK_DEBUG']))
+
+debug = False
+if 'FLASK_DEBUG' in os.environ:
+    debug = bool(os.environ['FLASK_DEBUG'])
 
 app = Flask(__name__)
 
-r = redis.Redis(host='redis', port='6379', decode_responses=True)
+if debug:
+    r = redis.Redis(host='localhost', port='6379', decode_responses=True)
+else:
+    r = redis.Redis(host='redis', port='6379', decode_responses=True)
 
 @app.route("/")
 def index():

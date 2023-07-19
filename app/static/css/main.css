@@ -23,3 +23,9 @@ i.add-list-trigger {
 .line-through {
     text-decoration: line-through;
 }
+
+.center-horizontally {
+    right: inherit;
+    left: 50%;
+    transform: translateX(-50%);
+}
