@@ -29,3 +29,20 @@ i.add-list-trigger {
     left: 50%;
     transform: translateX(-50%);
 }
+
+.item-card {
+    max-height: 150px;
+}
+
+.item-edit .card-content {
+    overflow-x: scroll;
+}
+
+.chips-wrapper {
+    display: flex;
+    overflow-x: scroll;
+}
+
+.chip {
+    cursor: pointer;
+}
