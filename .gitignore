@@ -1,4 +1,4 @@
 redis/
 venv/
 app/config.py
-__pycache__/
+app/__pycache__/
