@@ -36,15 +36,19 @@ def index():
 
 @app.route("/api/v1/items")
 def get_items():
-    items = []
-
+    # check if the request is authorized, return an empty list if not
     key = request.args.get("k")
+    if not safe_isin(key, authorized_keys):
+        return json.dumps([])
 
-    if safe_isin(key, authorized_keys):
-        item_ids = get_item_ids_from_redis()
-        titles = list(map(get_title_from_redis, item_ids))
+    # retreive the data in case of successful authorization
+    item_ids = get_item_ids_from_redis()
+    titles = map(get_title_from_redis, item_ids)
+    item_tags = map(get_item_tags_from_redis, item_ids)
+    item_tags = map(list, item_tags)
 
-        items = [{'id': item_id, 'title': title} for item_id, title in zip(item_ids, titles)]
+    items = [{'id': item_id, 'title': title, 'tags': tags} 
+             for item_id, title, tags in zip(item_ids, titles, item_tags)]
 
     return json.dumps(items)
 
@@ -55,6 +59,10 @@ def get_item_ids_from_redis():
 
 def get_title_from_redis(item_id):
     return r.get(f'items:{item_id}:title')
+
+
+def get_item_tags_from_redis(item_id):
+    return r.smembers(f'items:{item_id}:tags')
 
 
 def safe_isin(x, collection):
