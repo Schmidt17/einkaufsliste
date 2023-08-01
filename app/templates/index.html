@@ -21,42 +21,35 @@
     </header>
     
     <main>
+
         <div class="container">
+
             <div class="row">
-                <div class="col s12 l8 offset-l2" id="card-container">
-                    <div class="card s12 item-card">
-                        <div class="card-content">
-                            <span class="card-title">Butter</span>
-                            <div class="chip green-text green lighten-5">Supermarkt</div>
-                        </div>
-                    </div>
-
-                    <div class="card s12 item-card">
-                        <div class="card-content">
-                            <span class="card-title">Shampoo</span>
-                            <div class="chips-wrapper">
-                                <div class="chip green-text green lighten-5">Supermarkt</div>
-                                <div class="chip blue-text blue lighten-5">Drogerie</div>
-                                <div class="chip red-text red lighten-5">Zoohandlung</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    
-                </div>
+                <div class="col s12 l8 offset-l2" id="card-container"></div>
             </div>
+
             <div class="fixed-action-btn center-horizontally">
               <a class="btn-floating btn-large waves-effect red" id="add-btn">
                 <i class="large material-icons">add</i>
               </a>
-              <!-- <ul>
-                <li><a class="btn-floating red"><i class="material-icons">insert_chart</i></a></li>
-                <li><a class="btn-floating yellow darken-1"><i class="material-icons">format_quote</i></a></li>
-                <li><a class="btn-floating green"><i class="material-icons">publish</i></a></li>
-                <li><a class="btn-floating blue"><i class="material-icons">attach_file</i></a></li>
-              </ul> -->
+            </div>
+
+        </div>
+
+    </main>
+
+    <template id="card-template">
+        <div class="card s12 item-card">
+            <div class="card-content">
+                <span class="card-title"></span>
+                <div class="chips-wrapper"></div>
             </div>
         </div>
+    </template>
+
+    <template id="chip-template">
+        <div class="chip green-text green lighten-5"></div>
+    </template>
 
     <template id="edit-template">
         <div class="card s12 item-edit">
@@ -71,22 +64,45 @@
         </div>
     </template>
       
-    </main>
+    
 
     <script type="text/javascript" src="https://picluster.a-h.wtf/einkaufsliste/static/js/materialize.min.js"></script>
     
     <script>
       var api_key = "{{ api_key }}";
 
-      function initListComponents() {
+      function initAllCards() {
           var itemCards = document.querySelectorAll('.item-card');
-          itemCards.forEach((card) => card.addEventListener('click', function() {
-                this.classList.toggle('grey');
-                this.classList.toggle('lighten-2');
-                this.classList.toggle('grey-text');
-                this.querySelector('.card-title').classList.toggle('line-through');
-              })
-          );
+          itemCards.forEach(initCard);
+      }
+
+      function initCard(card) {
+        card.addEventListener('click', function() {
+            this.classList.toggle('grey');
+            this.classList.toggle('lighten-2');
+            this.classList.toggle('grey-text');
+            this.querySelector('.card-title').classList.toggle('line-through');
+        });
+      }
+
+      function addItemCard(itemData) {
+        const cardContainer = document.getElementById('card-container');
+        const cardTemplate = document.getElementById("card-template");
+        const chipTemplate = document.getElementById("chip-template");
+
+        const newCard = cardTemplate.content.firstElementChild.cloneNode(true);
+        newCard.querySelector('.card-title').innerText = itemData.title;
+        if (itemData.tags) {
+            const chipContainer = newCard.querySelector('.chips-wrapper');
+            itemData.tags.forEach((tag) => {
+                const newChip = chipTemplate.content.firstElementChild.cloneNode(true);
+                newChip.innerText = tag;
+                chipContainer.appendChild(newChip);
+            });
+        }
+
+        cardContainer.appendChild(newCard);
+        initCard(newCard);
       }
 
       var items = [];
@@ -94,6 +110,7 @@
       fetch(`https://picluster.a-h.wtf/einkaufsliste/api/v1/items?k=${encodeURIComponent(api_key)}`)
         .then((response) => response.json())
         .then((json) => {items = json})
+        .then(() => items.forEach(addItemCard))
 
 
       document.addEventListener('DOMContentLoaded', function() {
