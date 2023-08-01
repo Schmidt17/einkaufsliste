@@ -76,6 +76,26 @@
     <script type="text/javascript" src="https://picluster.a-h.wtf/einkaufsliste/static/js/materialize.min.js"></script>
     
     <script>
+      var api_key = "{{ api_key }}";
+
+      function initListComponents() {
+          var itemCards = document.querySelectorAll('.item-card');
+          itemCards.forEach((card) => card.addEventListener('click', function() {
+                this.classList.toggle('grey');
+                this.classList.toggle('lighten-2');
+                this.classList.toggle('grey-text');
+                this.querySelector('.card-title').classList.toggle('line-through');
+              })
+          );
+      }
+
+      var items = [];
+
+      fetch(`https://picluster.a-h.wtf/einkaufsliste/api/v1/items?k=${encodeURIComponent(api_key)}`)
+        .then((response) => response.json())
+        .then((json) => {items = json})
+
+
       document.addEventListener('DOMContentLoaded', function() {
           var elems = document.querySelectorAll('.sidenav');
           var instances = M.Sidenav.init(elems);
