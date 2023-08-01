@@ -86,8 +86,20 @@ def delete_item_from_redis(item_id):
     # delete title
     r.delete(f'items:{item_id}:title')
 
-    # delete tags (keep them in the global list for future autocomplete)
+    # delete tags
     r.delete(f'items:{item_id}:tags')
+    # update the global tags set
+    update_tags_set_in_redis()
+
+
+def update_tags_set_in_redis():
+    # get all item IDs
+    item_ids = get_item_ids_from_redis()
+    # construct all tag keys from the item ids
+    tag_keys = [f'items:{item_id}:tags' for item_id in item_ids]
+
+    # store the union of all tag sets in the global tag set
+    r.sunionstore('tags', *tag_keys)
 
 
 def add_item(item_data):
