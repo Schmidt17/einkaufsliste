@@ -108,9 +108,57 @@
       var items = [];
 
       fetch(`https://picluster.a-h.wtf/einkaufsliste/api/v1/items?k=${encodeURIComponent(api_key)}`)
-        .then((response) => response.json())
+        .then((response) => {
+            if (response.ok) {
+                return response.json()
+            }
+
+            return Promise.reject(response);
+        })
         .then((json) => {items = json})
         .then(() => items.forEach(addItemCard))
+        .catch((response) => {
+            console.log('Error while fetching items:')
+            console.log(response.status, response.statusText)
+        })
+
+
+      async function postItem(itemData) {
+        const response = await fetch(
+            `https://picluster.a-h.wtf/einkaufsliste/api/v1/items?k=${encodeURIComponent(api_key)}`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    itemData: itemData
+                })
+            }
+        );
+
+        return response;
+      }
+
+      // postItem({
+      //   title: "TestTitle",
+      //   tags: ["Tag1", "Tag2"]
+      // })
+      // .then((response) => console.log(response))
+
+      async function deleteItem(itemId) {
+        const response = await fetch(
+            `https://picluster.a-h.wtf/einkaufsliste/api/v1/items/${encodeURIComponent(itemId)}?k=${encodeURIComponent(api_key)}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        return response;
+      }
+
+      // deleteItem("ca929b42-20b0-46c0-b3e2-82c37a5911a4")
+      // .then((response) => console.log(response))
 
 
       document.addEventListener('DOMContentLoaded', function() {
