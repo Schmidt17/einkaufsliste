@@ -3,9 +3,9 @@ import redis
 import re
 import os
 import json
+import secrets
 from config import authorized_keys
 
-#print(type(os.environ['FLASK_DEBUG']))
 
 debug = False
 if 'FLASK_DEBUG' in os.environ:
@@ -40,12 +40,11 @@ def get_items():
 
     key = request.args.get("k")
 
-    if key in authorized_keys:
+    if safe_isin(key, authorized_keys):
         item_ids = get_item_ids_from_redis()
         titles = list(map(get_title_from_redis, item_ids))
 
         items = [{'id': item_id, 'title': title} for item_id, title in zip(item_ids, titles)]
-
 
     return json.dumps(items)
 
@@ -56,3 +55,11 @@ def get_item_ids_from_redis():
 
 def get_title_from_redis(item_id):
     return r.get(f'items:{item_id}:title')
+
+
+def safe_isin(x, collection):
+    for elt in collection:
+        if secrets.compare_digest(x, elt):
+            return True
+
+    return False
