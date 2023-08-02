@@ -7,18 +7,33 @@ function updateTagList() {
       .then((json) => {all_tags = json.tags})
 }
 
-function initAllCards() {
-  var itemCards = document.querySelectorAll('.item-card');
-  itemCards.forEach(initCard);
-}
 
-function initCard(card) {
-card.addEventListener('click', function() {
-    this.classList.toggle('grey');
-    this.classList.toggle('lighten-2');
-    this.classList.toggle('grey-text');
-    this.querySelector('.card-title').classList.toggle('line-through');
-});
+function initCard(card, itemData) {
+    card.done = itemData.done;
+    card.itemData = itemData;
+
+    if (card.done) {
+        card.classList.add('grey');
+        card.classList.add('lighten-2');
+        card.classList.add('grey-text');
+        card.querySelector('.card-title').classList.add('line-through');
+    }
+
+    card.addEventListener('click', function() {
+        this.classList.toggle('grey');
+        this.classList.toggle('lighten-2');
+        this.classList.toggle('grey-text');
+        this.querySelector('.card-title').classList.toggle('line-through');
+
+        if (this.done) {
+            this.done = 0;
+        } else {
+            this.done = 1;
+        }
+
+        updateDone(this.itemData.id, this.done);
+
+    });
 }
 
 function addItemCard(itemData, beforeElt=null) {
@@ -55,7 +70,7 @@ function addItemCard(itemData, beforeElt=null) {
         cardContainer.insertBefore(newCard, firstItem);
     }
 
-    initCard(newCard);
+    initCard(newCard, itemData);
 }
 
 var items = [];
@@ -128,6 +143,23 @@ async function updateItem(itemId, itemData) {
             },
             body: JSON.stringify({
                 itemData: itemData
+            })
+        }
+    );
+
+    return response;
+}
+
+async function updateDone(itemId, doneStatus) {
+    const response = await fetch(
+        `https://picluster.a-h.wtf/einkaufsliste/api/v1/items/${encodeURIComponent(itemId)}/done?k=${encodeURIComponent(api_key)}`,
+        {
+            method: "UPDATE",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                done: doneStatus
             })
         }
     );
@@ -295,7 +327,8 @@ function submitUpdate(editCard, itemId) {
     let itemData = {
         id: itemId,
         title: title,
-        tags: tags
+        tags: tags,
+        done: 0
     }
 
     updateItem(itemId, itemData);

@@ -51,9 +51,10 @@ def get_items():
     titles = map(get_title_from_redis, item_ids)
     item_tags = map(get_item_tags_from_redis, item_ids)
     item_tags = map(list, item_tags)
+    dones = map(get_done_status_from_redis, item_ids)
 
-    items = [{'id': item_id, 'title': title, 'tags': tags} 
-             for item_id, title, tags in zip(item_ids, titles, item_tags)]
+    items = [{'id': item_id, 'title': title, 'tags': tags, 'done': done} 
+             for item_id, title, tags, done in zip(item_ids, titles, item_tags, dones)]
 
     return json.dumps(items)
 
@@ -83,6 +84,22 @@ def update_item(item_id):
     update_item_in_redis(item_id, request.json['itemData'])
 
     return {'success': True}
+
+
+@app.route("/api/v1/items/<item_id>/done", methods=['GET', 'UPDATE'])
+def done_status(item_id):
+    if request.method == 'GET':
+        status = get_done_status_from_redis(item_id)
+        if status:
+            done = 1
+        else:
+            done = 0
+
+        return {'done': done}
+    else:
+        add_done_status_to_redis(item_id, request.json['done'])
+
+        return {'success': True}
 
 
 def get_all_tags_from_redis():
@@ -132,6 +149,9 @@ def update_item_in_redis(item_id, item_data):
     # add in the new tags
     add_tags_to_redis(item_id, item_data['tags'])
 
+    # set done to false
+    add_done_status_to_redis(item_id, 0)
+
 
 def add_item(item_data):
     # create new ID
@@ -153,6 +173,9 @@ def add_item(item_data):
     # add tags
     add_tags_to_redis(new_id, item_data['tags'])
 
+    # set done status to false
+    add_done_status_to_redis(new_id, 0)
+
 
 def get_item_ids_from_redis():
     return r.zrange('items', 0, -1)
@@ -173,6 +196,14 @@ def add_item_to_redis(item_id, score):
 
 def add_title_to_redis(item_id, title):
     r.set(f'items:{item_id}:title', title)
+
+
+def add_done_status_to_redis(item_id, status):
+    r.set(f'items:{item_id}:done', str(status))
+
+
+def get_done_status_from_redis(item_id):
+    return int(r.get(f'items:{item_id}:done'))
 
 
 def add_tags_to_redis(item_id, tags):
