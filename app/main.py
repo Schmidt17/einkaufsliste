@@ -90,6 +90,18 @@ def get_tags():
     return {'tags': list(tags)}
 
 
+@app.route("/api/v1/items/<item_id>", methods=['UPDATE'])
+def update_item(item_id):
+    # check if the request is authorized, return an error if not
+    key = request.args.get("k")
+    if not safe_isin(key, authorized_keys):
+        abort(401)  # unauthorized
+
+    update_item_in_redis(item_id, request.json['itemData'])
+
+    return {'success': True}
+
+
 def get_all_tags_from_redis():
     return r.smembers('tags')
 
@@ -115,6 +127,19 @@ def update_tags_set_in_redis():
 
     # store the union of all tag sets in the global tag set
     r.sunionstore('tags', *tag_keys)
+
+
+def update_item_in_redis(item_id, item_data):
+    # update title
+    add_title_to_redis(item_id, item_data['title'])
+
+    # update tags
+    # delete old tags
+    r.delete(f'items:{item_id}:tags')
+    # update the global tags set in case some tags vanished
+    update_tags_set_in_redis()
+    # add in the new tags
+    add_tags_to_redis(item_id, item_data['tags'])
 
 
 def add_item(item_data):

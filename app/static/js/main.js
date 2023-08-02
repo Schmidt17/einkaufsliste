@@ -21,7 +21,7 @@ card.addEventListener('click', function() {
 });
 }
 
-function addItemCard(itemData) {
+function addItemCard(itemData, beforeElt=null) {
     const cardContainer = document.getElementById('card-container');
     const cardTemplate = document.getElementById("card-template");
     const chipTemplate = document.getElementById("chip-template");
@@ -30,6 +30,9 @@ function addItemCard(itemData) {
     const newCard = cardTemplate.content.firstElementChild.cloneNode(true);
     newCard.querySelector('.card-title').prepend(itemData.title);
     newCard.querySelector('.edit-btn').addEventListener('click', (e) => {
+        enterEditMode(newCard, itemData);
+
+        // don't pass the click event further up the DOM
         e.stopPropagation();
     });
 
@@ -43,10 +46,14 @@ function addItemCard(itemData) {
         });
     }
 
-    // we want to insert above the first item card, which might not be at index 0,
-    // since there might be edit cards above
-    const firstItem = cardContainer.querySelector('.item-card');
-    cardContainer.insertBefore(newCard, firstItem);
+    if (beforeElt) {
+        cardContainer.insertBefore(newCard, beforeElt);
+    } else {
+        // we want to insert above the first item card, which might not be at index 0,
+        // since there might be edit cards above
+        const firstItem = cardContainer.querySelector('.item-card');
+        cardContainer.insertBefore(newCard, firstItem);
+    }
 
     initCard(newCard);
 }
@@ -63,7 +70,7 @@ var items = [];
         return Promise.reject(response);
     })
     .then((json) => {items = json})
-    .then(() => items.forEach(addItemCard))
+    .then(() => items.forEach((elt) => addItemCard(elt)))
     .catch((response) => {
         console.log('Error while fetching items:')
         console.log(response.status, response.statusText)
@@ -109,8 +116,24 @@ async function deleteItem(itemId) {
 // deleteItem("ca929b42-20b0-46c0-b3e2-82c37a5911a4")
 // .then((response) => console.log(response))
 
+async function updateItem(itemId, itemData) {
+    const response = await fetch(
+        `https://picluster.a-h.wtf/einkaufsliste/api/v1/items/${encodeURIComponent(itemId)}?k=${encodeURIComponent(api_key)}`,
+        {
+            method: "UPDATE",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                itemData: itemData
+            })
+        }
+    );
 
-function initChips(parent) {
+    return response;
+}
+
+function initChips(parent, data=[]) {
   let autocomps = {};
   for (var tag of all_tags) {
     autocomps[tag] = null;
@@ -124,6 +147,7 @@ function initChips(parent) {
       limit: Infinity,
       minLength: 1
     },
+    data: data,
     onChipAdd: function(e, chip) {
         // when a new tag is added, we add it to the temporary autocomplete list
         var newTag = this.chipsData[this.chipsData.length - 1].tag;
@@ -145,7 +169,9 @@ document.addEventListener('DOMContentLoaded', function() {
   elems.forEach(initChips);
 
   var elems = document.querySelectorAll('.fixed-action-btn');
-  var instances = M.FloatingActionButton.init(elems);
+  var instances = M.FloatingActionButton.init(elems, {
+    direction: 'left'
+  });
 
   var itemCards = document.querySelectorAll('.item-card');
   itemCards.forEach((card) => card.addEventListener('click', function() {
@@ -204,4 +230,65 @@ function finishEditing(editCard) {
 
 function removeEditCard(editCard) {
     editCard.remove();
+}
+
+function enterEditMode(card, itemData) {
+    const container = document.getElementById("card-container");
+
+    // create edit card with delete button
+    const newEditCard = createFromTemplate("edit-template");
+
+    // create and add delete button
+    const newDelBtn = createFromTemplate("delete-template");
+    newDelBtn.addEventListener('click', function() {
+        deleteItem(itemData.id);
+        newEditCard.remove();
+    })
+    newEditCard.querySelector('.card-content').prepend(newDelBtn);
+
+    // add functionality to card actions
+    newEditCard.querySelector('.cancel-edit').addEventListener('click', function() {
+        container.insertBefore(card, newEditCard);
+        newEditCard.remove();
+    });
+
+    newEditCard.querySelector('.finish-edit').addEventListener('click', function() {
+        const newItemData = submitUpdate(newEditCard, itemData.id)
+        addItemCard(newItemData, newEditCard);
+        newEditCard.remove();
+    });
+
+    // pre-fill edit card with values from itemData
+    newEditCard.querySelector('#item').value = itemData.title;
+
+    // attach edit card before present card
+    container.insertBefore(newEditCard, card);
+
+    // initialize tag chips with values from itemData
+    initChips(newEditCard, itemData.tags.map((tag) => Object({tag: tag})))
+
+    // remove present card
+    card.remove()
+}
+
+function createFromTemplate(templateId) {
+    const template = document.getElementById(templateId);
+    const newElement = template.content.firstElementChild.cloneNode(true);
+
+    return newElement;
+}
+
+function submitUpdate(editCard, itemId) {
+    let title = editCard.querySelector('#item').value;
+    let tagsData = M.Chips.getInstance(editCard.querySelector('.chips')).chipsData;
+    let tags = tagsData.map((elt) => elt.tag);
+
+    let itemData = {
+        title: title,
+        tags: tags
+    }
+
+    updateItem(itemId, itemData);
+
+    return itemData;
 }
