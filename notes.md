@@ -20,4 +20,6 @@
 - Refactor frontend to Elm
 + Remove scroll on vertical overflow of card-content
 + Bug: Autocomplete broken on second tag
-- Add UI to edit/delete items
++ Add UI to edit items
+- Add UI to delete items
+- Refactor item reloading to be purely from backend

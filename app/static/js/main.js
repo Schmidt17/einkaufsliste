@@ -28,7 +28,12 @@ function addItemCard(itemData) {
 
 
     const newCard = cardTemplate.content.firstElementChild.cloneNode(true);
-    newCard.querySelector('.card-title').innerText = itemData.title;
+    newCard.querySelector('.card-title').prepend(itemData.title);
+    newCard.querySelector('.edit-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+
     if (itemData.tags) {
         const chipContainer = newCard.querySelector('.chips-wrapper');
         itemData.tags.forEach((tag) => {
@@ -48,20 +53,23 @@ function addItemCard(itemData) {
 
 var items = [];
 
-fetch(`https://picluster.a-h.wtf/einkaufsliste/api/v1/items?k=${encodeURIComponent(api_key)}`)
-.then((response) => {
-    if (response.ok) {
-        return response.json()
-    }
+// function reloadItems() {
+    fetch(`https://picluster.a-h.wtf/einkaufsliste/api/v1/items?k=${encodeURIComponent(api_key)}`)
+    .then((response) => {
+        if (response.ok) {
+            return response.json()
+        }
 
-    return Promise.reject(response);
-})
-.then((json) => {items = json})
-.then(() => items.forEach(addItemCard))
-.catch((response) => {
-    console.log('Error while fetching items:')
-    console.log(response.status, response.statusText)
-})
+        return Promise.reject(response);
+    })
+    .then((json) => {items = json})
+    .then(() => items.forEach(addItemCard))
+    .catch((response) => {
+        console.log('Error while fetching items:')
+        console.log(response.status, response.statusText)
+    })
+
+// }
 
 
 async function postItem(itemData) {
