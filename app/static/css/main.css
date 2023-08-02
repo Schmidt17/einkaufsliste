@@ -34,10 +34,6 @@ i.add-list-trigger {
     max-height: 150px;
 }
 
-.item-edit .card-content {
-    overflow-x: scroll;
-}
-
 .chips-wrapper {
     display: flex;
     overflow-x: scroll;

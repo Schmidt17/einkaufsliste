@@ -18,5 +18,5 @@
 - Implement labels for API keys?
 + Move js to file
 - Refactor frontend to Elm
-- Remove scroll on vertical overflow of card-content
++ Remove scroll on vertical overflow of card-content
 - Bug: Autocomplete broken on second tag
