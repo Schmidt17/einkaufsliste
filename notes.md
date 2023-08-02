@@ -12,9 +12,11 @@
 
 ## ToDos/Ideas
 
-- Add submit functionality to edit cards
++ Add submit functionality to edit cards
 - Implement tag coloring
 + Load autocomplete tags from backend
 - Implement labels for API keys?
 + Move js to file
 - Refactor frontend to Elm
+- Remove scroll on vertical overflow of card-content
+- Bug: Autocomplete broken on second tag

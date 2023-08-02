@@ -136,7 +136,7 @@ def add_item(item_data):
 
 
 def get_item_ids_from_redis():
-    return r.zrange('items', 0, -1, desc=True)
+    return r.zrange('items', 0, -1)
 
 
 def get_highscore_item_from_redis():

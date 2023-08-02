@@ -26,6 +26,7 @@ function addItemCard(itemData) {
     const cardTemplate = document.getElementById("card-template");
     const chipTemplate = document.getElementById("chip-template");
 
+
     const newCard = cardTemplate.content.firstElementChild.cloneNode(true);
     newCard.querySelector('.card-title').innerText = itemData.title;
     if (itemData.tags) {
@@ -37,7 +38,11 @@ function addItemCard(itemData) {
         });
     }
 
-    cardContainer.appendChild(newCard);
+    // we want to insert above the first item card, which might not be at index 0,
+    // since there might be edit cards above
+    const firstItem = cardContainer.querySelector('.item-card');
+    cardContainer.insertBefore(newCard, firstItem);
+
     initCard(newCard);
 }
 
@@ -157,7 +162,40 @@ document.addEventListener('DOMContentLoaded', function() {
     newEditCard.id = newId;
 
     container.prepend(newEditCard);
+
+    const finishBtn = newEditCard.querySelector('.finish-edit');
+    const cancelBtn = newEditCard.querySelector('.cancel-edit');
+
+    finishBtn.addEventListener('click', function() {
+        finishEditing(newEditCard);
+    });
+
+    cancelBtn.addEventListener('click', function() {
+        removeEditCard(newEditCard);
+    });
+
     initChips(newEditCard);
   });
 
 });
+
+
+function finishEditing(editCard) {
+    let title = editCard.querySelector('#item').value;
+    let tagsData = M.Chips.getInstance(editCard.querySelector('.chips')).chipsData;
+    let tags = tagsData.map((elt) => elt.tag);
+
+    let itemData = {
+        title: title,
+        tags: tags
+    }
+
+    addItemCard(itemData);
+    postItem(itemData);
+    removeEditCard(editCard);
+}
+
+
+function removeEditCard(editCard) {
+    editCard.remove();
+}
