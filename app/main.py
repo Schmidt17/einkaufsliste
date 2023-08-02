@@ -149,8 +149,11 @@ def add_item(item_data):
     # add ID to item ordered set
     # find current highest score
     high_id, high_score = get_highscore_item_from_redis()
-    # increment score and add item
-    new_score = high_score + 1
+    # increment score (if any) and add item
+    if high_score is None:
+        new_score = 0
+    else:
+        new_score = high_score + 1
     add_item_to_redis(new_id, new_score)
 
     # add title

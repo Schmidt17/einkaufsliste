@@ -26,3 +26,6 @@
 - Refactor item reloading to be purely from backend
 - Add "done" to item data & sync
 - Bug: Page jumps to top upon button clicks
+- Implement "Delete all done items"
+- Add eternal set of titles for autocomplete
+- Refactor api key authentication to central route
