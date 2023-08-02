@@ -79,6 +79,21 @@ def delete_item(item_id):
     return {'success': True}
 
 
+@app.get("/api/v1/tags")
+def get_tags():
+    # check if the request is authorized, return an error if not
+    key = request.args.get("k")
+    if not safe_isin(key, authorized_keys):
+        abort(401)  # unauthorized
+
+    tags = get_all_tags_from_redis()
+    return {'tags': list(tags)}
+
+
+def get_all_tags_from_redis():
+    return r.smembers('tags')
+
+
 def delete_item_from_redis(item_id):
     # delete entry from items sorted set
     r.zrem('items', item_id)
