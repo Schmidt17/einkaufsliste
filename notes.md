@@ -26,7 +26,8 @@
 - Refactor item/tags reloading to be purely from backend --> Implement "Reload" function
 - Add "done" to item data & sync
 - Push-Sync "done" status
-- Bug: Page jumps to top upon button clicks
++ Bug: Page jumps to top upon button clicks
 - Implement "Delete all done items"
 - Add eternal set of titles for autocomplete
 + Refactor api key authentication to central route
+- Add tag filtering (sticky input on top/navbar)

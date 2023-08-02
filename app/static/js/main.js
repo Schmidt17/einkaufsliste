@@ -60,7 +60,7 @@ function addItemCard(itemData, beforeElt=null) {
 
 var items = [];
 
-// function reloadItems() {
+function reloadItems() {
     fetch(`https://picluster.a-h.wtf/einkaufsliste/api/v1/items?k=${encodeURIComponent(api_key)}`)
     .then((response) => {
         if (response.ok) {
@@ -76,7 +76,9 @@ var items = [];
         console.log(response.status, response.statusText)
     })
 
-// }
+}
+
+reloadItems();
 
 
 async function postItem(itemData) {
@@ -222,9 +224,16 @@ function finishEditing(editCard) {
         tags: tags
     }
 
-    addItemCard(itemData);
-    postItem(itemData);
-    removeEditCard(editCard);
+    postItem(itemData)
+    .then(() => {
+        removeEditCard(editCard);
+        clearItemCards();
+        reloadItems();
+    });
+}
+
+function clearItemCards() {
+    document.querySelectorAll('.item-card').forEach((e) => e.remove());
 }
 
 
@@ -284,6 +293,7 @@ function submitUpdate(editCard, itemId) {
     let tags = tagsData.map((elt) => elt.tag);
 
     let itemData = {
+        id: itemId,
         title: title,
         tags: tags
     }
