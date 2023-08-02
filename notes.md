@@ -17,3 +17,4 @@
 + Load autocomplete tags from backend
 - Implement labels for API keys?
 + Move js to file
+- Refactor frontend to Elm

@@ -46,3 +46,7 @@ i.add-list-trigger {
 .chip {
     cursor: pointer;
 }
+
+.justify-right {
+    justify-content: right;
+}
