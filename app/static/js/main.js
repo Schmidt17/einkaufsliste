@@ -117,14 +117,12 @@ function initChips(parent) {
       minLength: 1
     },
     onChipAdd: function(e, chip) {
-        //Parse out the "close" that gets added onto the chip (for the "x")
-        // ** MUST TRIM FOR SPACES **
-        var lastIndex = chip.innerText.lastIndexOf("close");
-        var parsedText = chip.innerText.substring(0, lastIndex).trim();
+        // when a new tag is added, we add it to the temporary autocomplete list
+        var newTag = this.chipsData[this.chipsData.length - 1].tag;
         
         // clone the tag list to temporarily assign the new tag (in case it will not be submitted)
-        let tempAutos = Object.assign({}, all_tags);
-        tempAutos[parsedText] = null;
+        let tempAutos = Object.assign({}, autocomps);
+        tempAutos[newTag] = null;
         this.autocomplete.updateData(tempAutos);
     }
   });

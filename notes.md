@@ -19,4 +19,5 @@
 + Move js to file
 - Refactor frontend to Elm
 + Remove scroll on vertical overflow of card-content
-- Bug: Autocomplete broken on second tag
++ Bug: Autocomplete broken on second tag
+- Add UI to edit/delete items
