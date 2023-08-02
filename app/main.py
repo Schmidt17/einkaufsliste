@@ -20,6 +20,14 @@ else:
     r = redis.Redis(host='redis', port='6379', decode_responses=True)
 
 
+@app.before_request
+def check_authorization():
+    # check if the request is authorized, return an error if not
+    key = request.args.get("k")
+    if key is None or not safe_isin(key, authorized_keys):
+        abort(401)  # unauthorized
+
+
 @app.route("/")
 def index():
     api_key = request.args.get("k")
@@ -38,11 +46,6 @@ def index():
 
 @app.get("/api/v1/items")
 def get_items():
-    # check if the request is authorized, return an error if not
-    key = request.args.get("k")
-    if not safe_isin(key, authorized_keys):
-        abort(401)  # unauthorized
-
     # retreive the data in case of successful authorization
     item_ids = get_item_ids_from_redis()
     titles = map(get_title_from_redis, item_ids)
@@ -57,11 +60,6 @@ def get_items():
 
 @app.post("/api/v1/items")
 def post_item():
-    # check if the request is authorized, return an error if not
-    key = request.args.get("k")
-    if not safe_isin(key, authorized_keys):
-        abort(401)  # unauthorized
-
     add_item(request.json['itemData'])
 
     return {'success': True}
@@ -69,11 +67,6 @@ def post_item():
 
 @app.route("/api/v1/items/<item_id>", methods=["DELETE"])
 def delete_item(item_id):
-    # check if the request is authorized, return an error if not
-    key = request.args.get("k")
-    if not safe_isin(key, authorized_keys):
-        abort(401)  # unauthorized
-
     delete_item_from_redis(item_id)
 
     return {'success': True}
@@ -81,29 +74,24 @@ def delete_item(item_id):
 
 @app.get("/api/v1/tags")
 def get_tags():
-    # check if the request is authorized, return an error if not
-    key = request.args.get("k")
-    if not safe_isin(key, authorized_keys):
-        abort(401)  # unauthorized
-
     tags = get_all_tags_from_redis()
     return {'tags': list(tags)}
 
 
 @app.route("/api/v1/items/<item_id>", methods=['UPDATE'])
 def update_item(item_id):
-    # check if the request is authorized, return an error if not
-    key = request.args.get("k")
-    if not safe_isin(key, authorized_keys):
-        abort(401)  # unauthorized
-
     update_item_in_redis(item_id, request.json['itemData'])
 
     return {'success': True}
 
 
 def get_all_tags_from_redis():
-    return r.smembers('tags')
+    all_tags = r.smembers('tags')
+
+    if all_tags is None:
+        return set()
+    else:
+        return all_tags
 
 
 def delete_item_from_redis(item_id):
@@ -125,8 +113,11 @@ def update_tags_set_in_redis():
     # construct all tag keys from the item ids
     tag_keys = [f'items:{item_id}:tags' for item_id in item_ids]
 
-    # store the union of all tag sets in the global tag set
-    r.sunionstore('tags', *tag_keys)
+    if len(tag_keys) > 0:
+        # store the union of all tag sets in the global tag set
+        r.sunionstore('tags', *tag_keys)
+    else:
+        r.delete('tags')
 
 
 def update_item_in_redis(item_id, item_data):
