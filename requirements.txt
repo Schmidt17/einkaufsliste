@@ -1,2 +1,3 @@
 redis
 flask-api-key
+paho-mqtt

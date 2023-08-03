@@ -1,10 +1,12 @@
-from flask import Flask, render_template, request, abort
+from flask import Flask, render_template, request, abort, Response
 import redis
 import re
 import os
 import json
 import secrets
 import uuid
+import paho.mqtt.client as mqtt
+import ssl
 from config import authorized_keys
 
 
@@ -18,6 +20,23 @@ if debug:
     r = redis.Redis(host='localhost', port='6379', decode_responses=True)
 else:
     r = redis.Redis(host='redis', port='6379', decode_responses=True)
+
+
+def on_connect(client, userdata, flags, rc):
+    print("Connected to MQTT broker")
+
+def on_message(client, userdata, msg):
+    print(msg.topic + " " + str(msg.payload))
+
+mqtt_client = mqtt.Client()
+mqtt_client.on_connect = on_connect
+mqtt_client.on_message = on_message
+mqtt_topic = "einkaufsliste_doneUpdates"
+
+print("Trying to connect to MQTT broker ...")
+mqtt_client.tls_set(certfile=None, keyfile=None, cert_reqs=ssl.CERT_REQUIRED)
+mqtt_client.connect("broker.hivemq.com", 8883, 60)
+mqtt_client.loop_start()
 
 
 @app.before_request
@@ -100,6 +119,19 @@ def done_status(item_id):
         add_done_status_to_redis(item_id, request.json['done'])
 
         return {'success': True}
+
+
+# def done_event_stream():
+#     pubsub = r.pubsub()
+#     pubsub.subscribe('doneUpdates')
+
+#     for message in pubsub.listen():
+#         yield f'data: {message["data"]}\n\n'
+
+
+# @app.route("/api/v1/done/stream")
+# def stream():
+#     return Response(done_event_stream(), mimetype='text/event-stream')
 
 
 def get_all_tags_from_redis():
@@ -198,8 +230,14 @@ def add_title_to_redis(item_id, title):
     r.set(f'items:{item_id}:title', title)
 
 
+def publish_done_status(item_id, status):
+    mqtt_client.publish(mqtt_topic, json.dumps({'id': item_id, 'status': status}), qos=1, retain=False)
+
+
 def add_done_status_to_redis(item_id, status):
     r.set(f'items:{item_id}:done', str(status))
+    publish_done_status(item_id, status)
+    # r.publish('doneUpdates', json.dumps({'id': item_id, 'done': status}))
 
 
 def get_done_status_from_redis(item_id):

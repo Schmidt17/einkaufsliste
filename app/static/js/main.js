@@ -1,6 +1,118 @@
 var all_tags = [];
 updateTagList();
 
+// var doneEventSource = new EventSource(`https://picluster.a-h.wtf/einkaufsliste/api/v1/done/stream?k=${encodeURIComponent(api_key)}`);
+// doneEventSource.onmessage = function(e) {
+//     console.log(e.data);
+// }
+
+// configuration for the connection to the MQTT broker
+const mqtt_host = "broker.hivemq.com";
+const mqtt_port = 8884;
+// The client name comprises a generic prefix that describes the type of client
+// and a suffix that makes it unique, to allow multiple instances of the same client type to connect.
+// Prefix and suffix are joined with an underscore.
+// const client_prefix = "web-elm";
+// To generate the unique suffix, the current client time with millisecond precision is used.
+// In the unlikely case that a name collision still occurs, reloading some time later will likely succeed.
+// const client_unique_suffix = String(moment().unix()) + String(moment().milliseconds());
+// const client_name = client_prefix + "_" + client_unique_suffix;
+var topic = "einkaufsliste_doneUpdates";
+
+// create a MQTT client instance
+const client = new Paho.MQTT.Client(mqtt_host, mqtt_port, "");
+
+// variables to store actions that can be defined by the user
+var connectFollowUpAction = function() {};
+var connectionLostFollowUpAction = function() {};
+
+// set callback functions
+client.onConnectionLost = onConnectionLost;
+client.onMessageArrived = function (message) {
+    msgObj = JSON.parse(message.payloadString);
+
+    const card = getCardByItemId(msgObj.id);
+
+    if ((card != null) & (card.done != msgObj.status)) {
+        card.classList.toggle('grey');
+        card.classList.toggle('lighten-2');
+        card.classList.toggle('grey-text');
+        card.querySelector('.card-title').classList.toggle('line-through');
+
+        if (card.done) {
+            card.done = 0;
+        } else {
+            card.done = 1;
+        }
+    }
+};
+
+function getCardByItemId(itemId) {
+    const cardContainer = document.getElementById('card-container');
+    const allItemCards = cardContainer.querySelectorAll('.item-card');
+
+    for (const card of allItemCards) {
+        if (card.itemData.id == itemId) {
+            return card;
+        }
+    }
+
+    return null;
+}
+
+// called when the client has connected
+function onConnectSuccess() {
+  // Once a connection has been made, subscribe to the needed channels
+  console.log("Connected to MQTT broker at " + mqtt_host + ":" + mqtt_port);
+
+  client.subscribe(topic, {qos: 1});
+  console.log("Subscribed to topic " + topic);
+
+  // execute the follow-up function as defined by the user
+  connectFollowUpAction();
+}
+
+// called when the connection process has failed
+function onConnectFailure() {
+  console.log("Connecting to the MQTT broker at " + mqtt_host + ":" + mqtt_port + " has failed");
+
+  console.log("Trying to reconnect ...");
+  connectToBroker(connectFollowUpAction, client.onMessageArrived, connectionLostFollowUpAction, topic);
+}
+
+// function to attempt to connect the client to the MQTT broker
+function connectToBroker(newConnectFollowUpAction, newOnMessageArrived, newOnConnectionLost, mqttTopic) {
+  console.log("Trying to connect to MQTT broker at " + mqtt_host + ":" + mqtt_port + " ...");
+
+  // set up the user-defined configuration
+  connectFollowUpAction = newConnectFollowUpAction;
+  connectionLostFollowUpAction = newOnConnectionLost;
+  client.onMessageArrived = newOnMessageArrived;
+  topic = mqttTopic;
+
+  client.connect({
+    onSuccess: onConnectSuccess,
+    onFailure: onConnectFailure,
+    useSSL: true
+  });
+}
+
+
+// called when the client loses its connection
+function onConnectionLost(responseObject) {
+  if (responseObject.errorCode !== 0) {
+    console.log("onConnectionLost:" + responseObject.errorMessage);
+  }
+
+  connectionLostFollowUpAction();
+
+  console.log("Trying to reconnect ...");
+  connectToBroker(connectFollowUpAction, client.onMessageArrived, connectionLostFollowUpAction, topic);
+}
+
+connectToBroker(connectFollowUpAction, client.onMessageArrived, connectionLostFollowUpAction, topic);
+
+
 function updateTagList() {
     fetch(`https://picluster.a-h.wtf/einkaufsliste/api/v1/tags?k=${encodeURIComponent(api_key)}`)
       .then((response) => response.json())
