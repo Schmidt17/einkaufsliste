@@ -117,6 +117,26 @@ function updateTagList() {
     fetch(`https://picluster.a-h.wtf/einkaufsliste/api/v1/tags?k=${encodeURIComponent(api_key)}`)
       .then((response) => response.json())
       .then((json) => {all_tags = json.tags})
+      .then(() => populateFilterTags())
+}
+
+
+function populateFilterTags() {
+    const chipContainer = document.querySelector('.filter-chips');
+    // remove all current chips
+    chipContainer.querySelectorAll('.chip').forEach((e) => e.remove());
+
+    // add the new chips
+    all_tags.forEach((tag) => {
+        const newChip = createFromTemplate('chip-template');
+        newChip.innerText = tag;
+        newChip.addEventListener('click', function() {
+            this.classList.toggle('darken-1')
+            this.classList.toggle('white-text')
+        })
+
+        chipContainer.appendChild(newChip);
+    });
 }
 
 

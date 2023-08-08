@@ -46,3 +46,8 @@ i.add-list-trigger {
 .justify-right {
     justify-content: right;
 }
+
+.filter-chips {
+    padding: 10px;
+    flex-wrap: wrap;
+}

@@ -23,9 +23,9 @@
 + Add UI to initiate editing items
 + Add UI to edit items
 + Add UI to delete items
-- Refactor item/tags reloading to be purely from backend --> Implement "Reload" function
++ Refactor item/tags reloading to be purely from backend --> Implement "Reload" function
 + Add "done" to item data & sync
-- Push-Sync "done" status
++ Push-Sync "done" status
 + Bug: Page jumps to top upon button clicks
 - Implement "Delete all done items"
 - Add eternal set of titles for autocomplete
