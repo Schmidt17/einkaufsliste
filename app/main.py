@@ -121,19 +121,6 @@ def done_status(item_id):
         return {'success': True}
 
 
-# def done_event_stream():
-#     pubsub = r.pubsub()
-#     pubsub.subscribe('doneUpdates')
-
-#     for message in pubsub.listen():
-#         yield f'data: {message["data"]}\n\n'
-
-
-# @app.route("/api/v1/done/stream")
-# def stream():
-#     return Response(done_event_stream(), mimetype='text/event-stream')
-
-
 def get_all_tags_from_redis():
     all_tags = r.smembers('tags')
 
@@ -237,7 +224,6 @@ def publish_done_status(item_id, status):
 def add_done_status_to_redis(item_id, status):
     r.set(f'items:{item_id}:done', str(status))
     publish_done_status(item_id, status)
-    # r.publish('doneUpdates', json.dumps({'id': item_id, 'done': status}))
 
 
 def get_done_status_from_redis(item_id):

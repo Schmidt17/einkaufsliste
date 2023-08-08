@@ -2,23 +2,12 @@ var all_tags = [];
 updateTagList();
 
 var filters = new Set();
+var noTagsFilter = '42ef91e6101f62a0';
 
-// var doneEventSource = new EventSource(`https://picluster.a-h.wtf/einkaufsliste/api/v1/done/stream?k=${encodeURIComponent(api_key)}`);
-// doneEventSource.onmessage = function(e) {
-//     console.log(e.data);
-// }
 
 // configuration for the connection to the MQTT broker
 const mqtt_host = "broker.hivemq.com";
 const mqtt_port = 8884;
-// The client name comprises a generic prefix that describes the type of client
-// and a suffix that makes it unique, to allow multiple instances of the same client type to connect.
-// Prefix and suffix are joined with an underscore.
-// const client_prefix = "web-elm";
-// To generate the unique suffix, the current client time with millisecond precision is used.
-// In the unlikely case that a name collision still occurs, reloading some time later will likely succeed.
-// const client_unique_suffix = String(moment().unix()) + String(moment().milliseconds());
-// const client_name = client_prefix + "_" + client_unique_suffix;
 var topic = "einkaufsliste_doneUpdates";
 
 // create a MQTT client instance
@@ -129,34 +118,40 @@ function populateFilterTags() {
     chipContainer.querySelectorAll('.chip').forEach((e) => e.remove());
 
     // add the new chips
+    const newChip = newFilterChip('No tags', noTagsFilter);
+    chipContainer.appendChild(newChip);
+
     all_tags.forEach((tag) => {
-        const newChip = createFromTemplate('chip-template');
-        newChip.innerText = tag;
-        newChip.activated = false;
-        newChip.addEventListener('click', function() {
-            this.classList.toggle('darken-1')
-            this.classList.toggle('white-text')
-
-            if (this.activated) {
-                this.activated = false
-                filters.delete(tag)
-            } else {
-                this.activated = true
-                filters.add(tag)
-            }
-
-            updateFilters();
-        })
-
+        const newChip = newFilterChip(tag, tag);
         chipContainer.appendChild(newChip);
     });
+}
+
+function newFilterChip(tag, filterName) {
+    const newChip = createFromTemplate('chip-template');
+    newChip.innerText = tag;
+    newChip.activated = false;
+    newChip.addEventListener('click', function() {
+        this.classList.toggle('darken-1')
+        this.classList.toggle('white-text')
+
+        if (this.activated) {
+            this.activated = false
+            filters.delete(filterName)
+        } else {
+            this.activated = true
+            filters.add(filterName)
+        }
+
+        updateFilters();
+    })
+
+    return newChip;
 }
 
 function updateFilters() {
     const cardContainer = document.getElementById('card-container');
     const cards = cardContainer.querySelectorAll('.item-card');
-
-    console.log(cards.length)
 
     // in case of no filters, make all cards visible
     if (filters.size == 0) {
@@ -174,6 +169,12 @@ function updateFilters() {
                 if (filters.has(tag)) {
                     visible = true;
                     break;
+                }
+            }
+
+            if (card.itemData.tags.length == 0) {
+                if (filters.has(noTagsFilter)) {
+                    visible = true;
                 }
             }
 
