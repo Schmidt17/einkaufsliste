@@ -1,6 +1,8 @@
 var all_tags = [];
 updateTagList();
 
+var filters = new Set();
+
 // var doneEventSource = new EventSource(`https://picluster.a-h.wtf/einkaufsliste/api/v1/done/stream?k=${encodeURIComponent(api_key)}`);
 // doneEventSource.onmessage = function(e) {
 //     console.log(e.data);
@@ -130,13 +132,60 @@ function populateFilterTags() {
     all_tags.forEach((tag) => {
         const newChip = createFromTemplate('chip-template');
         newChip.innerText = tag;
+        newChip.activated = false;
         newChip.addEventListener('click', function() {
             this.classList.toggle('darken-1')
             this.classList.toggle('white-text')
+
+            if (this.activated) {
+                this.activated = false
+                filters.delete(tag)
+            } else {
+                this.activated = true
+                filters.add(tag)
+            }
+
+            updateFilters();
         })
 
         chipContainer.appendChild(newChip);
     });
+}
+
+function updateFilters() {
+    const cardContainer = document.getElementById('card-container');
+    const cards = cardContainer.querySelectorAll('.item-card');
+
+    console.log(cards.length)
+
+    // in case of no filters, make all cards visible
+    if (filters.size == 0) {
+
+        for (const card of cards) {
+            card.style.display = 'block'
+        }
+
+    } else {
+
+        // apply the filters
+        for (const card of cards) {
+            let visible = false;
+            for (const tag of card.itemData.tags) {
+                if (filters.has(tag)) {
+                    visible = true;
+                    break;
+                }
+            }
+
+            if (visible) {
+                card.style.display = 'block'
+            } else {
+                card.style.display = 'none'
+            }
+            
+        }
+
+    }
 }
 
 
