@@ -268,6 +268,7 @@ function reloadItems() {
     })
     .then((json) => {items = json})
     .then(() => items.forEach((elt) => addItemCard(elt)))
+    .then(() => updateFilters())
     .catch((response) => {
         console.log('Error while fetching items:')
         console.log(response.status, response.statusText)
@@ -495,6 +496,7 @@ function enterEditMode(card, itemData) {
         const newItemData = submitUpdate(newEditCard, itemData.id)
         addItemCard(newItemData, newEditCard);
         newEditCard.remove();
+        updateFilters();
     });
 
     // pre-fill edit card with values from itemData
