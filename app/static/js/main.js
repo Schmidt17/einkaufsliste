@@ -429,7 +429,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function finishEditing(editCard) {
     let title = editCard.querySelector('#item').value;
-    let tagsData = M.Chips.getInstance(editCard.querySelector('.chips')).chipsData;
+
+    let chipsInstance = M.Chips.getInstance(editCard.querySelector('.chips'));
+    let remainingText = chipsInstance.el.querySelector('input').value;
+    if (remainingText != "") {
+        chipsInstance.el.querySelector('input').value = "";
+        chipsInstance.addChip({tag: remainingText});
+    }
+
+    let tagsData = chipsInstance.chipsData;
     let tags = tagsData.map((elt) => elt.tag);
 
     let itemData = {
@@ -475,6 +483,14 @@ function enterEditMode(card, itemData) {
     });
 
     newEditCard.querySelector('.finish-edit').addEventListener('click', function() {
+        // add any text that is still in the input as a tag
+        let chipsInstance = M.Chips.getInstance(newEditCard.querySelector('.chips'));
+        let remainingText = chipsInstance.el.querySelector('input').value;
+        if (remainingText != "") {
+            chipsInstance.el.querySelector('input').value = "";
+            chipsInstance.addChip({tag: remainingText});
+        }
+
         const newItemData = submitUpdate(newEditCard, itemData.id)
         addItemCard(newItemData, newEditCard);
         newEditCard.remove();
