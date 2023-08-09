@@ -449,6 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelBtn = newEditCard.querySelector('.cancel-edit');
 
     finishBtn.addEventListener('click', function() {
+        finishBtn.disabled = true;
         finishEditing(newEditCard);
     });
 
@@ -517,7 +518,10 @@ function enterEditMode(card, itemData) {
         newEditCard.remove();
     });
 
-    newEditCard.querySelector('.finish-edit').addEventListener('click', function() {
+    const finishBtn = newEditCard.querySelector('.finish-edit');
+    finishBtn.addEventListener('click', function() {
+        finishBtn.disabled = true;
+
         // add any text that is still in the input as a tag
         let chipsInstance = M.Chips.getInstance(newEditCard.querySelector('.chips'));
         let remainingText = chipsInstance.el.querySelector('input').value;
