@@ -313,6 +313,27 @@ async function deleteItem(itemId) {
     return response;
 }
 
+async function deleteAllDoneItems() {
+    // get all done item IDs
+    var doneIds = [];
+
+    const cardContainer = document.getElementById('card-container');
+    const cards = cardContainer.querySelectorAll('.item-card');
+
+    for (const card of cards) {
+        if (card.done) {
+            doneIds.push(card.itemData.id);
+        }
+    }
+
+    // aggregate the delete requests into a list
+    const requests = doneIds.map((id) => deleteItem(id));
+    // collect all async calls into a single Promise
+    const result = await Promise.all(requests);
+
+    return result;
+}
+
 // deleteItem("ca929b42-20b0-46c0-b3e2-82c37a5911a4")
 // .then((response) => console.log(response))
 
@@ -388,6 +409,18 @@ document.addEventListener('DOMContentLoaded', function() {
   var elems = document.querySelectorAll('.fixed-action-btn');
   var instances = M.FloatingActionButton.init(elems, {
     direction: 'left'
+  });
+
+  var elems = document.querySelectorAll('.modal');
+  var instances = M.Modal.init(elems);
+
+  var delAllBtn = document.getElementById('delAllBtn');
+  delAllBtn.addEventListener('click', function() {
+    deleteAllDoneItems()
+        .then((res) => {
+            clearItemCards();
+            reloadItems();
+        });
   });
 
   var itemCards = document.querySelectorAll('.item-card');

@@ -19,11 +19,28 @@
     <header>        
 
       <nav style='height: auto;'>
-        <div class="nav-wrapper">
+        <div class="nav-wrapper" style="display: flex;">
+
             <div class="chips-wrapper filter-chips">
             </div>
+
+            <ul id="nav-mobile">
+                <li><a href="#delConfirmModal" class="modal-trigger"><i class="material-icons white-text">delete</i></a></li>
+            </ul>
+
         </div>
       </nav>
+
+      <div id="delConfirmModal" class="modal">
+        <div class="modal-content">
+          <h4>Sicher?</h4>
+          <p>Alle abgehakten löschen?</p>
+        </div>
+        <div class="modal-footer">
+          <a href="#!" class="modal-close waves-effect waves-green btn-flat">Abbrechen</a>
+          <a href="#!" id="delAllBtn" class="modal-close waves-effect waves-green btn-flat">Löschen</a>
+        </div>
+      </div>
         
     </header>
     
