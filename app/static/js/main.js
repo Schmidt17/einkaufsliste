@@ -448,9 +448,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const finishBtn = newEditCard.querySelector('.finish-edit');
     const cancelBtn = newEditCard.querySelector('.cancel-edit');
 
+    finishBtn.enabled = true;
     finishBtn.addEventListener('click', function() {
-        finishBtn.disabled = true;
-        finishEditing(newEditCard);
+        if (finishBtn.enabled) {
+            finishBtn.enabled = false;
+            finishEditing(newEditCard);
+        }
     });
 
     cancelBtn.addEventListener('click', function() {
@@ -519,21 +522,24 @@ function enterEditMode(card, itemData) {
     });
 
     const finishBtn = newEditCard.querySelector('.finish-edit');
+    finishBtn.enabled = true;
     finishBtn.addEventListener('click', function() {
-        finishBtn.disabled = true;
+        if (finishBtn.enabled) {
+            finishBtn.enabled = false;
 
-        // add any text that is still in the input as a tag
-        let chipsInstance = M.Chips.getInstance(newEditCard.querySelector('.chips'));
-        let remainingText = chipsInstance.el.querySelector('input').value;
-        if (remainingText != "") {
-            chipsInstance.el.querySelector('input').value = "";
-            chipsInstance.addChip({tag: remainingText});
+            // add any text that is still in the input as a tag
+            let chipsInstance = M.Chips.getInstance(newEditCard.querySelector('.chips'));
+            let remainingText = chipsInstance.el.querySelector('input').value;
+            if (remainingText != "") {
+                chipsInstance.el.querySelector('input').value = "";
+                chipsInstance.addChip({tag: remainingText});
+            }
+
+            const newItemData = submitUpdate(newEditCard, itemData.id)
+            addItemCard(newItemData, newEditCard);
+            newEditCard.remove();
+            updateFilters();
         }
-
-        const newItemData = submitUpdate(newEditCard, itemData.id)
-        addItemCard(newItemData, newEditCard);
-        newEditCard.remove();
-        updateFilters();
     });
 
     // pre-fill edit card with values from itemData
