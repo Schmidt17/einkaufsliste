@@ -389,6 +389,11 @@ function initChips(parent, data=[]) {
     onChipAdd: function(e, chip) {
         // when a new tag is added, we add it to the temporary autocomplete list
         var newTag = this.chipsData[this.chipsData.length - 1].tag;
+
+        // trim whitespace on new tag
+        newTag = newTag.trim();
+        // write it back to the data array
+        this.chipsData[this.chipsData.length - 1].tag = newTag;
         
         // clone the tag list to temporarily assign the new tag (in case it will not be submitted)
         let tempAutos = Object.assign({}, autocomps);
@@ -473,7 +478,7 @@ function finishEditing(editCard) {
     let remainingText = chipsInstance.el.querySelector('input').value;
     if (remainingText != "") {
         chipsInstance.el.querySelector('input').value = "";
-        chipsInstance.addChip({tag: remainingText});
+        chipsInstance.addChip({tag: remainingText.trim()});
     }
 
     let tagsData = chipsInstance.chipsData;
