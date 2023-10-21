@@ -9,6 +9,7 @@ var noTagsFilter = '42ef91e6101f62a0';
 const mqtt_host = "broker.hivemq.com";
 const mqtt_port = 8884;
 var topic = "einkaufsliste_doneUpdates";
+var topic_newItem = "einkaufsliste_newItem";
 
 // create a MQTT client instance
 const client = new Paho.MQTT.Client(mqtt_host, mqtt_port, "");
@@ -22,19 +23,26 @@ client.onConnectionLost = onConnectionLost;
 client.onMessageArrived = function (message) {
     msgObj = JSON.parse(message.payloadString);
 
-    const card = getCardByItemId(msgObj.id);
+    if (message.topic == topic) {
+        const card = getCardByItemId(msgObj.id);
 
-    if ((card != null) & (card.done != msgObj.status)) {
-        card.classList.toggle('grey');
-        card.classList.toggle('lighten-2');
-        card.classList.toggle('grey-text');
-        card.querySelector('.card-title').classList.toggle('line-through');
+        if ((card != null) & (card.done != msgObj.status)) {
+            card.classList.toggle('grey');
+            card.classList.toggle('lighten-2');
+            card.classList.toggle('grey-text');
+            card.querySelector('.card-title').classList.toggle('line-through');
 
-        if (card.done) {
-            card.done = 0;
-        } else {
-            card.done = 1;
+            if (card.done) {
+                card.done = 0;
+            } else {
+                card.done = 1;
+            }
         }
+    }
+
+    if (message.topic == topic_newItem) {
+        clearItemCards();
+        reloadItems();
     }
 };
 
@@ -58,6 +66,9 @@ function onConnectSuccess() {
 
   client.subscribe(topic, {qos: 1});
   console.log("Subscribed to topic " + topic);
+
+  client.subscribe(topic_newItem, {qos: 1});
+  console.log("Subscribed to topic " + topic_newItem);
 
   // execute the follow-up function as defined by the user
   connectFollowUpAction();
@@ -468,6 +479,13 @@ document.addEventListener('DOMContentLoaded', function() {
     initChips(newEditCard);
   });
 
+
+  window.addEventListener("focus", function() {
+    if (navigator.onLine) {
+      clearItemCards();
+      reloadItems();
+    }
+  });
 });
 
 

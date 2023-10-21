@@ -32,6 +32,7 @@ mqtt_client = mqtt.Client()
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 mqtt_topic = "einkaufsliste_doneUpdates"
+mqtt_topic_newItem = "einkaufsliste_newItem"
 
 print("Trying to connect to MQTT broker ...")
 mqtt_client.tls_set(certfile=None, keyfile=None, cert_reqs=ssl.CERT_REQUIRED)
@@ -195,6 +196,9 @@ def add_item(item_data):
     # set done status to false
     add_done_status_to_redis(new_id, 0)
 
+    # publish to clients that a new item was added
+    publish_new_item(new_id)
+
 
 def get_item_ids_from_redis():
     return r.zrange('items', 0, -1)
@@ -215,6 +219,10 @@ def add_item_to_redis(item_id, score):
 
 def add_title_to_redis(item_id, title):
     r.set(f'items:{item_id}:title', title)
+
+
+def publish_new_item(item_id):
+    mqtt_client.publish(mqtt_topic_newItem, json.dumps({'id': item_id}), qos=1, retain=False)
 
 
 def publish_done_status(item_id, status):
