@@ -477,6 +477,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     initChips(newEditCard);
+
+    scrollToTop();
   });
 
 
@@ -600,4 +602,9 @@ function submitUpdate(editCard, itemId) {
     updateItem(itemId, itemData);
 
     return itemData;
+}
+
+function scrollToTop() {
+    document.body.scrollTop = 0; // For Safari
+    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
 }
