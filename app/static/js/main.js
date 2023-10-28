@@ -268,7 +268,7 @@ function addItemCard(itemData, beforeElt=null) {
 
 var items = [];
 
-function reloadItems() {
+function reloadItems(followUpFunc=Function.prototype) {
     fetch(`https://picluster.a-h.wtf/einkaufsliste/api/v1/items?k=${encodeURIComponent(api_key)}`)
     .then((response) => {
         if (response.ok) {
@@ -280,6 +280,7 @@ function reloadItems() {
     .then((json) => {items = json})
     .then(() => items.forEach((elt) => addItemCard(elt)))
     .then(() => updateFilters())
+    .then(followUpFunc)
     .catch((response) => {
         console.log('Error while fetching items:')
         console.log(response.status, response.statusText)
@@ -484,8 +485,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   window.addEventListener("focus", function() {
     if (navigator.onLine) {
+      let scrollPos = getScrollPosition();
       clearItemCards();
-      reloadItems();
+      reloadItems(() => {scrollToPosition(scrollPos.x, scrollPos.y)});
     }
   });
 });
@@ -605,6 +607,13 @@ function submitUpdate(editCard, itemId) {
 }
 
 function scrollToTop() {
-    document.body.scrollTop = 0; // For Safari
-    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    scrollToPosition(0, 0);
+}
+
+function scrollToPosition(scrollX, scrollY) {
+    window.scroll(scrollX, scrollY);
+}
+
+function getScrollPosition() {
+    return {x: window.scrollX, y: window.scrollY}
 }
