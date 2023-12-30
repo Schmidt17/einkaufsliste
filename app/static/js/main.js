@@ -41,7 +41,6 @@ client.onMessageArrived = function (message) {
     }
 
     if (message.topic == topic_newItem) {
-        clearItemCards();
         reloadItems();
     }
 };
@@ -278,6 +277,7 @@ function reloadItems(followUpFunc=Function.prototype) {
         return Promise.reject(response);
     })
     .then((json) => {items = json})
+    .then(() => clearItemCards())
     .then(() => items.forEach((elt) => addItemCard(elt)))
     .then(() => updateFilters())
     .then(followUpFunc)
@@ -435,7 +435,6 @@ document.addEventListener('DOMContentLoaded', function() {
   delAllBtn.addEventListener('click', function() {
     deleteAllDoneItems()
         .then((res) => {
-            clearItemCards();
             reloadItems();
         });
   });
@@ -486,7 +485,6 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener("focus", function() {
     if (navigator.onLine) {
       let scrollPos = getScrollPosition();
-      clearItemCards();
       reloadItems(() => {scrollToPosition(scrollPos.x, scrollPos.y)});
     }
   });
@@ -514,7 +512,6 @@ function finishEditing(editCard) {
     postItem(itemData)
     .then(() => {
         removeEditCard(editCard);
-        clearItemCards();
         reloadItems();
     });
 }
