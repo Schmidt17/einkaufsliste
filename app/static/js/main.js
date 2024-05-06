@@ -30,6 +30,8 @@ client.onConnectionLost = onConnectionLost;
 client.onMessageArrived = function (message) {
     msgObj = JSON.parse(message.payloadString);
 
+    console.log(msgObj);
+
     if (message.topic == topic) {
         const card = getCardByItemId(msgObj.id);
 
