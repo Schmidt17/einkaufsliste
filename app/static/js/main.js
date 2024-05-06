@@ -30,10 +30,7 @@ client.onConnectionLost = onConnectionLost;
 client.onMessageArrived = function (message) {
     msgObj = JSON.parse(message.payloadString);
 
-    console.log(message);
-    console.log(msgObj);
-
-    if (message.topic == topic) {
+    if (message.destinationName == topic) {
         const card = getCardByItemId(msgObj.id);
 
         if ((card != null) & (card.done != msgObj.status)) {
@@ -41,7 +38,7 @@ client.onMessageArrived = function (message) {
         }
     }
 
-    if (message.topic == topic_newItem) {
+    if (message.destinationName == topic_newItem) {
         reloadItems();
     }
 };
