@@ -10,7 +10,7 @@ services:
     command: redis-server --appendonly yes --maxmemory 512mb --tcp-backlog 128
     restart: always
   server-stage:
-    image: einkaufsliste/webapp
+    image: einkaufsliste-stage/webapp
     build: .
     volumes:
       - ./app:/app
