@@ -13,8 +13,10 @@ from config import authorized_keys
 STAGING = True
 
 if STAGING:
-    REDIS_PORT = 6380
+    REDIS_NAME = 'redis-stage'
+    REDIS_PORT = 6379
 else:
+    REDIS_NAME = 'redis'
     REDIS_PORT = 6379
 
 
@@ -27,7 +29,7 @@ app = Flask(__name__)
 if debug:
     r = redis.Redis(host='localhost', port=f'{REDIS_PORT}', decode_responses=True)
 else:
-    r = redis.Redis(host='redis', port=f'{REDIS_PORT}', decode_responses=True)
+    r = redis.Redis(host=REDIS_NAME, port=f'{REDIS_PORT}', decode_responses=True)
 
 
 def on_connect(client, userdata, flags, rc):
