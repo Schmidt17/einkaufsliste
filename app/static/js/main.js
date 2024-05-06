@@ -33,8 +33,10 @@ client.onMessageArrived = function (message) {
     if (message.destinationName == topic) {
         const card = getCardByItemId(msgObj.id);
 
-        if ((card != null) & (card.done != msgObj.status)) {
-            toggleCardDone(card);
+        if (card != null) { 
+            if (card.done != msgObj.status) {
+                toggleCardDone(card);
+            }
         }
     }
 
