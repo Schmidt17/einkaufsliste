@@ -244,7 +244,9 @@ def publish_done_status(item_id, status):
 
 
 def add_done_status_to_redis(item_id, status):
-    r.set(f'items:{item_id}:done', str(status))
+    int_status = int(status)
+    
+    r.set(f'items:{item_id}:done', str(int_status))
     publish_done_status(item_id, status)
 
 

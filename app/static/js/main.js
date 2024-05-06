@@ -233,8 +233,6 @@ function initCard(card, itemData) {
     card.done = itemData.done;
     card.itemData = itemData;
 
-    const cardTitle = card.querySelector('.card-title');
-
     if (card.done) {
         toggleCardDoneStyle(card);
     }
