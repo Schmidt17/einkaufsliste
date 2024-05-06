@@ -1,25 +1,25 @@
 version: "3.9"
    
 services:
-  redis-stage:
+  redis:
     image: arm32v7/redis
     volumes:
       - ./redis/data:/data
     ports:
-      - '6380:6379'
+      - '6379:6379'
     command: redis-server --appendonly yes --maxmemory 512mb --tcp-backlog 128
     restart: always
-  server-stage:
-    image: einkaufsliste-stage/webapp
+  server:
+    image: einkaufsliste/webapp
     environment:
-      - DEPLOY_ENVIRONMENT=stage
+      - DEPLOY_ENVIRONMENT=production
     build: .
     volumes:
       - ./app:/app
     ports:
-      - "8082:80"
+      - "8081:80"
     restart: always
     depends_on:
-      - redis-stage
+      - redis
 
 
