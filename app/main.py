@@ -26,6 +26,11 @@ if 'FLASK_DEBUG' in os.environ:
 
 app = Flask(__name__)
 
+if STAGING:
+    app.config['APPLICATION_ROOT'] = '/einkaufsliste-stage'
+else:
+    app.config['APPLICATION_ROOT'] = '/einkaufsliste'
+
 if debug:
     r = redis.Redis(host='localhost', port=f'{REDIS_PORT}', decode_responses=True)
 else:
