@@ -39,6 +39,12 @@ client.onMessageArrived = function (message) {
             card.classList.toggle('grey-text');
             card.querySelector('.card-title').classList.toggle('line-through');
 
+            if (this.ariaLabel === null) {
+                this.ariaLabel = 'Durchgestrichen';
+            } else {
+                this.ariaLabel = null;
+            }
+
             if (card.done) {
                 card.done = 0;
             } else {
@@ -216,6 +222,8 @@ function initCard(card, itemData) {
         card.classList.add('lighten-2');
         card.classList.add('grey-text');
         card.querySelector('.card-title').classList.add('line-through');
+
+        card.ariaLabel = 'Durchgestrichen'
     }
 
     card.addEventListener('click', function() {
@@ -223,6 +231,8 @@ function initCard(card, itemData) {
         this.classList.toggle('lighten-2');
         this.classList.toggle('grey-text');
         this.querySelector('.card-title').classList.toggle('line-through');
+
+        this.ariaLabel = null;
 
         if (this.done) {
             this.done = 0;
@@ -452,6 +462,13 @@ document.addEventListener('DOMContentLoaded', function() {
         this.classList.toggle('lighten-2');
         this.classList.toggle('grey-text');
         this.querySelector('.card-title').classList.toggle('line-through');
+
+        if (this.ariaLabel === null) {
+            this.ariaLabel = 'Durchgestrichen';
+        } else {
+            this.ariaLabel = null;
+        }
+
       })
   );
 
