@@ -10,6 +10,14 @@ import ssl
 from config import authorized_keys
 
 
+STAGING = True
+
+if STAGING:
+    REDIS_PORT = 6380
+else:
+    REDIS_PORT = 6379
+
+
 debug = False
 if 'FLASK_DEBUG' in os.environ:
     debug = bool(os.environ['FLASK_DEBUG'])
@@ -17,9 +25,9 @@ if 'FLASK_DEBUG' in os.environ:
 app = Flask(__name__)
 
 if debug:
-    r = redis.Redis(host='localhost', port='6379', decode_responses=True)
+    r = redis.Redis(host='localhost', port=f'{REDIS_PORT}', decode_responses=True)
 else:
-    r = redis.Redis(host='redis', port='6379', decode_responses=True)
+    r = redis.Redis(host='redis', port=f'{REDIS_PORT}', decode_responses=True)
 
 
 def on_connect(client, userdata, flags, rc):
@@ -31,8 +39,12 @@ def on_message(client, userdata, msg):
 mqtt_client = mqtt.Client()
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
-mqtt_topic = "einkaufsliste_doneUpdates"
-mqtt_topic_newItem = "einkaufsliste_newItem"
+if STAGING:
+    mqtt_topic = "einkaufsliste_doneUpdates_stage"
+    mqtt_topic_newItem = "einkaufsliste_newItem_stage"
+else:
+    mqtt_topic = "einkaufsliste_doneUpdates"
+    mqtt_topic_newItem = "einkaufsliste_newItem"
 
 print("Trying to connect to MQTT broker ...")
 mqtt_client.tls_set(certfile=None, keyfile=None, cert_reqs=ssl.CERT_REQUIRED)
