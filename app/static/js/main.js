@@ -30,6 +30,7 @@ client.onConnectionLost = onConnectionLost;
 client.onMessageArrived = function (message) {
     msgObj = JSON.parse(message.payloadString);
 
+    console.log(message.topic);
     console.log(msgObj);
 
     if (message.topic == topic) {
