@@ -15,9 +15,19 @@ STAGING = True
 if STAGING:
     REDIS_NAME = 'redis-stage'
     REDIS_PORT = 6379
+
+    url_root = 'einkaufsliste-stage'
+
+    mqtt_topic = "einkaufsliste_doneUpdates_stage"
+    mqtt_topic_newItem = "einkaufsliste_newItem_stage"
 else:
     REDIS_NAME = 'redis'
     REDIS_PORT = 6379
+
+    url_root = 'einkaufsliste'
+
+    mqtt_topic = "einkaufsliste_doneUpdates"
+    mqtt_topic_newItem = "einkaufsliste_newItem"
 
 
 debug = False
@@ -26,10 +36,6 @@ if 'FLASK_DEBUG' in os.environ:
 
 app = Flask(__name__)
 
-if STAGING:
-    url_root = 'einkaufsliste-stage'
-else:
-    url_root = 'einkaufsliste'
 
 if debug:
     r = redis.Redis(host='localhost', port=f'{REDIS_PORT}', decode_responses=True)
@@ -46,12 +52,6 @@ def on_message(client, userdata, msg):
 mqtt_client = mqtt.Client()
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
-if STAGING:
-    mqtt_topic = "einkaufsliste_doneUpdates_stage"
-    mqtt_topic_newItem = "einkaufsliste_newItem_stage"
-else:
-    mqtt_topic = "einkaufsliste_doneUpdates"
-    mqtt_topic_newItem = "einkaufsliste_newItem"
 
 print("Trying to connect to MQTT broker ...")
 mqtt_client.tls_set(certfile=None, keyfile=None, cert_reqs=ssl.CERT_REQUIRED)
@@ -80,7 +80,13 @@ def index():
         
         listnames.append(listname)
 
-    return render_template('index.html', listnames=listnames, api_key=api_key, url_root=url_root)
+    return render_template('index.html', 
+        listnames=listnames, 
+        api_key=api_key, 
+        url_root=url_root,
+        mqtt_topic=mqtt_topic,
+        mqtt_topic_newItem=mqtt_topic_newItem
+    )
 
 
 @app.get("/api/v1/items")

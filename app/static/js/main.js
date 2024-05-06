@@ -1,5 +1,3 @@
-const STAGING = true;
-
 var all_tags = [];
 updateTagList();
 
@@ -9,14 +7,6 @@ var noTagsFilter = '42ef91e6101f62a0';
 // configuration for the connection to the MQTT broker
 const mqtt_host = "broker.hivemq.com";
 const mqtt_port = 8884;
-
-if (STAGING) {
-    var topic = "einkaufsliste_doneUpdates_stage";
-    var topic_newItem = "einkaufsliste_newItem_stage";
-} else {
-    var topic = "einkaufsliste_doneUpdates";
-    var topic_newItem = "einkaufsliste_newItem";
-}
 
 // create a MQTT client instance
 const client = new Paho.MQTT.Client(mqtt_host, mqtt_port, "");
