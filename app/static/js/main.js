@@ -215,6 +215,31 @@ function updateFilters() {
     }
 }
 
+function toggleCardDone(card) {
+    card.classList.toggle('grey');
+    card.classList.toggle('lighten-2');
+    card.classList.toggle('grey-text');
+
+    const cardTitle = card.querySelector('.card-title');
+
+    cardTitle.classList.toggle('line-through');
+
+    if (card.done) {
+        card.done = 0;
+    } else {
+        card.done = 1;
+    }
+
+    if (card.done) {
+        cardTitle.ariaLabel = 'Durchgestrichen';
+    } else {
+        cardTitle.ariaLabel = cardTitle.innerText;
+    }
+
+    updateDone(card.itemData.id, card.done);
+
+}
+
 
 function initCard(card, itemData) {
     card.done = itemData.done;
@@ -228,35 +253,12 @@ function initCard(card, itemData) {
         card.classList.add('grey-text');
         card.querySelector('.card-title').classList.add('line-through');
 
-        card.querySelector('.card-title').ariaLabel = 'Durchgestrichen'
+        card.querySelector('.card-title').ariaLabel = 'Durchgestrichen: ' + cardTitle.innerText
     } else {
         cardTitle.ariaLabel = cardTitle.innerText;
     }
 
-    card.addEventListener('click', function() {
-        this.classList.toggle('grey');
-        this.classList.toggle('lighten-2');
-        this.classList.toggle('grey-text');
-
-        const cardTitle = this.querySelector('.card-title');
-
-        cardTitle.classList.toggle('line-through');
-
-        if (this.done) {
-            this.done = 0;
-        } else {
-            this.done = 1;
-        }
-
-        if (this.done) {
-            cardTitle.ariaLabel = 'Durchgestrichen';
-        } else {
-            cardTitle.ariaLabel = cardTitle.innerText;
-        }
-
-        updateDone(this.itemData.id, this.done);
-
-    });
+    card.addEventListener('click', () => toggleCardDone(card));
 }
 
 function addItemCard(itemData, beforeElt=null) {
@@ -471,32 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   var itemCards = document.querySelectorAll('.item-card');
-  itemCards.forEach((card) => card.addEventListener('click', function() {
-        this.classList.toggle('grey');
-        this.classList.toggle('lighten-2');
-        this.classList.toggle('grey-text');
-
-        const cardTitle = card.querySelector('.card-title');
-
-        cardTitle.classList.toggle('line-through');
-
-        if (this.done) {
-            this.done = 0;
-        } else {
-            this.done = 1;
-        }
-
-        if (this.done) {
-            cardTitle.ariaLabel = 'Durchgestrichen';
-        } else {
-            cardTitle.ariaLabel = cardTitle.innerText;
-        }
-
-        updateDone(this.itemData.id, this.done);
-
-
-      })
-  );
+  itemCards.forEach((card) => card.addEventListener('click', () => toggleCardDone(card)));
 
   const container = document.getElementById("card-container");
   const template = document.getElementById("edit-template");
