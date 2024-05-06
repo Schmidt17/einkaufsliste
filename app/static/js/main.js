@@ -37,18 +37,21 @@ client.onMessageArrived = function (message) {
             card.classList.toggle('grey');
             card.classList.toggle('lighten-2');
             card.classList.toggle('grey-text');
-            card.querySelector('.card-title').classList.toggle('line-through');
 
-            if (this.querySelector('.card-title').ariaLabel === null) {
-                this.querySelector('.card-title').ariaLabel = 'Durchgestrichen';
-            } else {
-                this.querySelector('.card-title').ariaLabel = null;
-            }
+            const cardTitle = card.querySelector('.card-title');
+
+            cardTitle.classList.toggle('line-through');
 
             if (card.done) {
                 card.done = 0;
             } else {
                 card.done = 1;
+            }
+
+            if (card.done) {
+                cardTitle.ariaLabel = 'Durchgestrichen';
+            } else {
+                cardTitle.ariaLabel = cardTitle.innerText;
             }
         }
     }
@@ -217,6 +220,8 @@ function initCard(card, itemData) {
     card.done = itemData.done;
     card.itemData = itemData;
 
+    const cardTitle = card.querySelector('.card-title');
+
     if (card.done) {
         card.classList.add('grey');
         card.classList.add('lighten-2');
@@ -224,20 +229,29 @@ function initCard(card, itemData) {
         card.querySelector('.card-title').classList.add('line-through');
 
         card.querySelector('.card-title').ariaLabel = 'Durchgestrichen'
+    } else {
+        cardTitle.ariaLabel = cardTitle.innerText;
     }
 
     card.addEventListener('click', function() {
         this.classList.toggle('grey');
         this.classList.toggle('lighten-2');
         this.classList.toggle('grey-text');
-        this.querySelector('.card-title').classList.toggle('line-through');
 
-        this.querySelector('.card-title').ariaLabel = null;
+        const cardTitle = this.querySelector('.card-title');
+
+        cardTitle.classList.toggle('line-through');
 
         if (this.done) {
             this.done = 0;
         } else {
             this.done = 1;
+        }
+
+        if (this.done) {
+            cardTitle.ariaLabel = 'Durchgestrichen';
+        } else {
+            cardTitle.ariaLabel = cardTitle.innerText;
         }
 
         updateDone(this.itemData.id, this.done);
@@ -461,13 +475,25 @@ document.addEventListener('DOMContentLoaded', function() {
         this.classList.toggle('grey');
         this.classList.toggle('lighten-2');
         this.classList.toggle('grey-text');
-        this.querySelector('.card-title').classList.toggle('line-through');
 
-        if (this.querySelector('.card-title').ariaLabel === null) {
-            this.querySelector('.card-title').ariaLabel = 'Durchgestrichen';
+        const cardTitle = card.querySelector('.card-title');
+
+        cardTitle.classList.toggle('line-through');
+
+        if (this.done) {
+            this.done = 0;
         } else {
-            this.querySelector('.card-title').ariaLabel = null;
+            this.done = 1;
         }
+
+        if (this.done) {
+            cardTitle.ariaLabel = 'Durchgestrichen';
+        } else {
+            cardTitle.ariaLabel = cardTitle.innerText;
+        }
+
+        updateDone(this.itemData.id, this.done);
+
 
       })
   );
