@@ -258,6 +258,9 @@ function addItemCard(itemData, beforeElt=null) {
         itemData.tags.forEach((tag) => {
             const newChip = chipTemplate.content.firstElementChild.cloneNode(true);
             newChip.innerText = tag;
+
+            newChip.ariaLabel = 'Tag: ' + tag;
+
             chipContainer.appendChild(newChip);
         });
     }
