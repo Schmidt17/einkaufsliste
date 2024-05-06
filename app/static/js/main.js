@@ -113,7 +113,7 @@ connectToBroker(connectFollowUpAction, client.onMessageArrived, connectionLostFo
 
 
 function updateTagList() {
-    fetch(`https://picluster.a-h.wtf/einkaufsliste-stage/api/v1/tags?k=${encodeURIComponent(api_key)}`)
+    fetch(`https://picluster.a-h.wtf/${encodeURIComponent(url_root)}/api/v1/tags?k=${encodeURIComponent(api_key)}`)
       .then((response) => response.json())
       .then((json) => {all_tags = json.tags})
       .then(() => populateFilterTags())
@@ -285,7 +285,7 @@ function addItemCard(itemData, beforeElt=null) {
 var items = [];
 
 function reloadItems(followUpFunc=Function.prototype) {
-    fetch(`https://picluster.a-h.wtf/einkaufsliste-stage/api/v1/items?k=${encodeURIComponent(api_key)}`)
+    fetch(`https://picluster.a-h.wtf/${encodeURIComponent(url_root)}/api/v1/items?k=${encodeURIComponent(api_key)}`)
     .then((response) => {
         if (response.ok) {
             return response.json()
@@ -310,7 +310,7 @@ reloadItems();
 
 async function postItem(itemData) {
     const response = await fetch(
-        `https://picluster.a-h.wtf/einkaufsliste-stage/api/v1/items?k=${encodeURIComponent(api_key)}`,
+        `https://picluster.a-h.wtf/${encodeURIComponent(url_root)}/api/v1/items?k=${encodeURIComponent(api_key)}`,
         {
             method: "POST",
             headers: {
@@ -333,7 +333,7 @@ async function postItem(itemData) {
 
 async function deleteItem(itemId) {
     const response = await fetch(
-        `https://picluster.a-h.wtf/einkaufsliste-stage/api/v1/items/${encodeURIComponent(itemId)}?k=${encodeURIComponent(api_key)}`,
+        `https://picluster.a-h.wtf/${encodeURIComponent(url_root)}/api/v1/items/${encodeURIComponent(itemId)}?k=${encodeURIComponent(api_key)}`,
         {
             method: "DELETE"
         }
@@ -368,7 +368,7 @@ async function deleteAllDoneItems() {
 
 async function updateItem(itemId, itemData) {
     const response = await fetch(
-        `https://picluster.a-h.wtf/einkaufsliste-stage/api/v1/items/${encodeURIComponent(itemId)}?k=${encodeURIComponent(api_key)}`,
+        `https://picluster.a-h.wtf/${encodeURIComponent(url_root)}/api/v1/items/${encodeURIComponent(itemId)}?k=${encodeURIComponent(api_key)}`,
         {
             method: "UPDATE",
             headers: {
@@ -385,7 +385,7 @@ async function updateItem(itemId, itemData) {
 
 async function updateDone(itemId, doneStatus) {
     const response = await fetch(
-        `https://picluster.a-h.wtf/einkaufsliste-stage/api/v1/items/${encodeURIComponent(itemId)}/done?k=${encodeURIComponent(api_key)}`,
+        `https://picluster.a-h.wtf/${encodeURIComponent(url_root)}/api/v1/items/${encodeURIComponent(itemId)}/done?k=${encodeURIComponent(api_key)}`,
         {
             method: "UPDATE",
             headers: {

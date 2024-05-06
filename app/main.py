@@ -27,9 +27,9 @@ if 'FLASK_DEBUG' in os.environ:
 app = Flask(__name__)
 
 if STAGING:
-    app.config['APPLICATION_ROOT'] = '/einkaufsliste-stage'
+    url_root = 'einkaufsliste-stage'
 else:
-    app.config['APPLICATION_ROOT'] = '/einkaufsliste'
+    url_root = 'einkaufsliste'
 
 if debug:
     r = redis.Redis(host='localhost', port=f'{REDIS_PORT}', decode_responses=True)
@@ -80,7 +80,7 @@ def index():
         
         listnames.append(listname)
 
-    return render_template('index.html', listnames=listnames, api_key=api_key)
+    return render_template('index.html', listnames=listnames, api_key=api_key, url_root=url_root)
 
 
 @app.get("/api/v1/items")
