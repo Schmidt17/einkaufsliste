@@ -11,6 +11,8 @@ services:
     restart: always
   server-stage:
     image: einkaufsliste-stage/webapp
+    environment:
+      - DEPLOY_ENVIRONMENT=stage
     build: .
     volumes:
       - ./app:/app

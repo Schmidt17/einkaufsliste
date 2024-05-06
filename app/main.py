@@ -11,6 +11,9 @@ from config import authorized_keys
 
 
 STAGING = True
+if 'DEPLOY_ENVIRONMENT' in os.environ:
+    if os.environ['DEPLOY_ENVIRONMENT'] == 'production':
+        STAGING = False
 
 if STAGING:
     REDIS_NAME = 'redis-stage'
