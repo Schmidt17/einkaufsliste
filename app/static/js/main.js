@@ -398,10 +398,10 @@ async function collectAction(itemId, itemTitle, doneStatus) {
         return;
     }
 
+    var action_type = "CROSSED";
+
     if (doneStatus) {
-        const action_type = "UNCROSSED";
-    } else {
-        const action_type = "CROSSED";
+        action_type = "UNCROSSED";
     }
 
     const response = await fetch(
