@@ -400,7 +400,7 @@ async function collectAction(itemId, itemTitle, doneStatus) {
 
     var action_type = "CROSSED";
 
-    if (doneStatus) {
+    if (!doneStatus) {
         action_type = "UNCROSSED";
     }
 
