@@ -1,3 +1,17 @@
+// set up location tracking for figuring out where we are shopping
+var client_coords = {
+    latitude: null,
+    longitude: null
+};
+
+function updateCoords(geolocationPos) {
+    client_coords.latitude = geolocationPos.coords.latitude;
+    client_coords.longitude = geolocationPos.coords.longitude;
+}
+
+var posWatchId = navigator.geolocation.watchPosition(updateCoords);
+
+// prepare tags
 var all_tags = [];
 updateTagList();
 
