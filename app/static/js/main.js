@@ -405,7 +405,7 @@ async function collectAction(itemId, itemTitle, doneStatus) {
     }
 
     const response = await fetch(
-        `https://picluster.a-h.wtf/einkaufs_api/collect`,
+        `https://picluster.a-h.wtf/einkaufs_api/collect/`,
         {
             method: "POST",
             headers: {
