@@ -248,6 +248,7 @@ function initCard(card, itemData) {
     card.addEventListener('click', () => {
         toggleCardDone(card);
         updateDone(card.itemData.id, card.done);
+        collectAction(card.itemData.id, card.itemData.title, card.done);
     });
 }
 
@@ -392,6 +393,37 @@ async function updateItem(itemId, itemData) {
     return response;
 }
 
+async function collectAction(itemId, itemTitle, doneStatus) {
+    if (url_root != 'einkaufsliste') {  // only collect data in production
+        return;
+    }
+
+    if (doneStatus) {
+        const action_type = "UNCROSSED";
+    } else {
+        const action_type = "CROSSED";
+    }
+
+    const response = await fetch(
+        `https://picluster.a-h.wtf/einkaufs_api/collect`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                action_type: action_type,
+                name: itemTitle,
+                item_id: itemId,
+                latitude: client_coords.latitude,
+                longitude: client_coords.longitude
+            })
+        }
+    );
+
+    return response;
+}
+
 async function updateDone(itemId, doneStatus) {
     const response = await fetch(
         `https://picluster.a-h.wtf/${encodeURIComponent(url_root)}/api/v1/items/${encodeURIComponent(itemId)}/done?k=${encodeURIComponent(api_key)}`,
@@ -469,6 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
   itemCards.forEach((card) => card.addEventListener('click', () => {
     toggleCardDone(card);
     updateDone(card.itemData.id, card.done);
+    collectAction(card.itemData.id, card.itemData.title, card.done);
   }));
 
   const container = document.getElementById("card-container");
