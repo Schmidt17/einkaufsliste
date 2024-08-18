@@ -416,7 +416,8 @@ async function collectAction(itemId, itemTitle, doneStatus) {
                 name: itemTitle,
                 item_id: itemId,
                 latitude: client_coords.latitude,
-                longitude: client_coords.longitude
+                longitude: client_coords.longitude,
+                user_agent: window.navigator.userAgent
             })
         }
     );
