@@ -417,7 +417,8 @@ async function collectAction(itemId, itemTitle, doneStatus) {
                 item_id: itemId,
                 latitude: client_coords.latitude,
                 longitude: client_coords.longitude,
-                user_agent: window.navigator.userAgent
+                user_agent: window.navigator.userAgent,
+                user_key: api_key
             })
         }
     );
