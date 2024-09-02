@@ -394,7 +394,7 @@ async function updateItem(itemId, itemData) {
 }
 
 async function collectAction(itemId, itemTitle, doneStatus) {
-    if (url_root != 'einkaufsliste') {  // only collect data in production
+    if !((url_root == 'einkaufsliste') || (url_root == 'einkaufsliste-stage')){  // only collect data in production and stage
         return;
     }
 
