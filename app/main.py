@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, abort, Response
+from flask_cors import CORS
 import redis
 import re
 import os
@@ -38,6 +39,7 @@ if 'FLASK_DEBUG' in os.environ:
     debug = bool(os.environ['FLASK_DEBUG'])
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
 if debug:
