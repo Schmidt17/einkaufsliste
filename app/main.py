@@ -39,7 +39,8 @@ if 'FLASK_DEBUG' in os.environ:
     debug = bool(os.environ['FLASK_DEBUG'])
 
 app = Flask(__name__)
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}},
+            methods=["GET", "HEAD", "POST", "UPDATE", "OPTIONS", "PUT", "PATCH", "DELETE"])
 
 
 if debug:
