@@ -112,9 +112,9 @@ def get_items():
 
 @app.post("/api/v1/items")
 def post_item():
-    add_item(request.json['itemData'])
+    new_id = add_item(request.json['itemData'])
 
-    return {'success': True}
+    return {'success': True, 'newId': new_id}
 
 
 @app.route("/api/v1/items/<item_id>", methods=["DELETE"])
@@ -229,6 +229,8 @@ def add_item(item_data):
 
     # publish to clients that a new item was added
     publish_new_item(new_id)
+
+    return new_id
 
 
 def get_item_ids_from_redis():
