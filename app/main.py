@@ -228,7 +228,7 @@ def add_item(item_data):
     add_done_status_to_redis(new_id, 0)
 
     # publish to clients that a new item was added
-    publish_new_item(new_id)
+    publish_new_item(new_id, item_data['title'], item_data['tags'], 0)
 
     return new_id
 
@@ -254,8 +254,8 @@ def add_title_to_redis(item_id, title):
     r.set(f'items:{item_id}:title', title)
 
 
-def publish_new_item(item_id):
-    mqtt_client.publish(mqtt_topic_newItem, json.dumps({'id': item_id}), qos=1, retain=False)
+def publish_new_item(item_id, title, tags, done):
+    mqtt_client.publish(mqtt_topic_newItem, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done}), qos=1, retain=False)
 
 
 def publish_done_status(item_id, status):
