@@ -24,6 +24,7 @@ if STAGING:
 
     mqtt_topic = "einkaufsliste_doneUpdates_stage"
     mqtt_topic_newItem = "einkaufsliste_newItem_stage"
+    mqtt_topic_itemDeleted = "einkaufsliste_itemDeleted_stage"
 else:
     REDIS_NAME = 'redis'
     REDIS_PORT = 6379
@@ -32,6 +33,7 @@ else:
 
     mqtt_topic = "einkaufsliste_doneUpdates"
     mqtt_topic_newItem = "einkaufsliste_newItem"
+    mqtt_topic_itemDeleted = "einkaufsliste_itemDeleted"
 
 
 debug = False
@@ -120,6 +122,8 @@ def post_item():
 @app.route("/api/v1/items/<item_id>", methods=["DELETE"])
 def delete_item(item_id):
     delete_item_from_redis(item_id)
+
+    publish_item_deleted(item_id)
 
     return {'success': True}
 
@@ -260,6 +264,9 @@ def publish_new_item(item_id, title, tags, done):
 
 def publish_done_status(item_id, status):
     mqtt_client.publish(mqtt_topic, json.dumps({'id': item_id, 'status': status}), qos=1, retain=False)
+
+def publish_item_deleted(item_id):
+    mqtt_client.publish(mqtt_topic_itemDeleted, json.dumps({'id': item_id}), qos=1, retain=False)
 
 
 def add_done_status_to_redis(item_id, status):
