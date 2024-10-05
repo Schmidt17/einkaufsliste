@@ -25,6 +25,7 @@ if STAGING:
     mqtt_topic = "einkaufsliste_doneUpdates_stage"
     mqtt_topic_newItem = "einkaufsliste_newItem_stage"
     mqtt_topic_itemDeleted = "einkaufsliste_itemDeleted_stage"
+    mqtt_topic_itemUpdated = "einkaufsliste_itemUpdated_stage"
 else:
     REDIS_NAME = 'redis'
     REDIS_PORT = 6379
@@ -34,6 +35,7 @@ else:
     mqtt_topic = "einkaufsliste_doneUpdates"
     mqtt_topic_newItem = "einkaufsliste_newItem"
     mqtt_topic_itemDeleted = "einkaufsliste_itemDeleted"
+    mqtt_topic_itemUpdated = "einkaufsliste_itemUpdated"
 
 
 debug = False
@@ -136,7 +138,9 @@ def get_tags():
 
 @app.route("/api/v1/items/<item_id>", methods=['UPDATE'])
 def update_item(item_id):
-    update_item_in_redis(item_id, request.json['itemData'])
+    new_item_data = update_item_in_redis(item_id, request.json['itemData'])
+
+    publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'])
 
     return {'success': True}
 
@@ -193,8 +197,16 @@ def update_tags_set_in_redis():
 
 
 def update_item_in_redis(item_id, item_data):
+
+    new_item_data = {
+        'id': item_id
+        'title': item_data['title'],
+        'tags': item_data['tags'],
+        'done': 0
+    }
+
     # update title
-    add_title_to_redis(item_id, item_data['title'])
+    add_title_to_redis(item_id, new_item_data['title'])
 
     # update tags
     # delete old tags
@@ -202,10 +214,12 @@ def update_item_in_redis(item_id, item_data):
     # update the global tags set in case some tags vanished
     update_tags_set_in_redis()
     # add in the new tags
-    add_tags_to_redis(item_id, item_data['tags'])
+    add_tags_to_redis(item_id, new_item_data['tags'])
 
     # set done to false
-    add_done_status_to_redis(item_id, 0)
+    add_done_status_to_redis(item_id, new_item_data['done'])
+
+    return new_item_data
 
 
 def add_item(item_data):
@@ -262,8 +276,13 @@ def publish_new_item(item_id, title, tags, done):
     mqtt_client.publish(mqtt_topic_newItem, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done}), qos=1, retain=False)
 
 
+def publish_item_updated(item_id, title, tags, done):
+    mqtt_client.publish(mqtt_topic_itemUpdated, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done}), qos=1, retain=False)
+
+
 def publish_done_status(item_id, status):
     mqtt_client.publish(mqtt_topic, json.dumps({'id': item_id, 'status': status}), qos=1, retain=False)
+
 
 def publish_item_deleted(item_id):
     mqtt_client.publish(mqtt_topic_itemDeleted, json.dumps({'id': item_id}), qos=1, retain=False)
