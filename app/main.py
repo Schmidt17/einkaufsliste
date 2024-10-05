@@ -199,7 +199,7 @@ def update_tags_set_in_redis():
 def update_item_in_redis(item_id, item_data):
 
     new_item_data = {
-        'id': item_id
+        'id': item_id,
         'title': item_data['title'],
         'tags': item_data['tags'],
         'done': 0
