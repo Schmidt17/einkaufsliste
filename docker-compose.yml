@@ -5,19 +5,17 @@ services:
     image: arm32v7/redis
     volumes:
       - ./redis/data:/data
-    ports:
-      - '6379:6379'
     command: redis-server --appendonly yes --maxmemory 512mb --tcp-backlog 128
     restart: always
   server:
-    image: einkaufsliste/webapp
+    image: einkaufsliste-multiuser/webapp
     environment:
       - DEPLOY_ENVIRONMENT=production
     build: .
     volumes:
       - ./app:/app
     ports:
-      - "8081:80"
+      - "8083:80"
     restart: always
     depends_on:
       - redis
