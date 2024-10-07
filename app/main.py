@@ -30,7 +30,7 @@ else:
     REDIS_NAME = 'redis'
     REDIS_PORT = 6379
 
-    url_root = 'einkaufsliste'
+    url_root = 'einkaufsliste-multiuser'
 
     mqtt_topic = "doneUpdates"
     mqtt_topic_newItem = "newItem"
