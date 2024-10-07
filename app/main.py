@@ -181,6 +181,9 @@ def delete_item_from_redis(item_id, user_key):
     # delete title
     r.delete(f'{user_key}:items:{item_id}:title')
 
+    # delete done status
+    r.delete(f'{user_key}:items:{item_id}:done')
+
     # delete tags
     r.delete(f'{user_key}:items:{item_id}:tags')
     # update the global tags set
