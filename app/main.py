@@ -8,6 +8,8 @@ import secrets
 import uuid
 import paho.mqtt.client as mqtt
 import ssl
+from functools import partial
+
 from config import authorized_keys
 
 
