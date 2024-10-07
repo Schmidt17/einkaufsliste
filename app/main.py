@@ -313,7 +313,7 @@ def add_done_status_to_redis(item_id, status, user_key):
     int_status = int(status)
     
     r.set(f'{user_key}:items:{item_id}:done', str(int_status))
-    publish_done_status(item_id, status, user_key)
+    publish_done_status(item_id, int_status, user_key)
 
 
 def get_done_status_from_redis(item_id, user_key):
