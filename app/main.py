@@ -79,12 +79,12 @@ def check_authorization():
 
 @app.route("/")
 def index():
-    api_key = request.args.get("k")
-    if api_key is None:
-        api_key = ""
+    user_key = request.args.get("k")
+    if user_key is None:
+        user_key = ""
 
     return render_template('index.html',
-        api_key=api_key,
+        api_key=user_key,
         url_root=url_root,
         mqtt_topic=f'einkaufsliste/{user_key_part(user_key)}/{mqtt_topic}',
         mqtt_topic_newItem=f'einkaufsliste/{user_key_part(user_key)}/{mqtt_topic_newItem}'
