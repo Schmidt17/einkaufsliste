@@ -123,7 +123,7 @@ def delete_item(item_id):
 
     delete_item_from_redis(item_id, user_key)
 
-    publish_item_deleted(item_id)
+    publish_item_deleted(item_id, user_key)
 
     return {'success': True}
 
@@ -142,7 +142,7 @@ def update_item(item_id):
 
     new_item_data = update_item_in_redis(item_id, request.json['itemData'], user_key)
 
-    publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'])
+    publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], user_key)
 
     return {'success': True}
 
@@ -250,7 +250,7 @@ def add_item(item_data, user_key):
     add_done_status_to_redis(new_id, 0, user_key)
 
     # publish to clients that a new item was added
-    publish_new_item(new_id, item_data['title'], item_data['tags'], 0)
+    publish_new_item(new_id, item_data['title'], item_data['tags'], 0, user_key)
 
     return new_id
 
@@ -276,27 +276,39 @@ def add_title_to_redis(item_id, title, user_key):
     r.set(f'{user_key}:items:{item_id}:title', title)
 
 
-def publish_new_item(item_id, title, tags, done):
-    mqtt_client.publish(mqtt_topic_newItem, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done}), qos=1, retain=False)
+def publish_new_item(item_id, title, tags, done, user_key):
+    topic = f'einkaufsliste/{user_key_part(user_key)}/{mqtt_topic_newItem}'
+    mqtt_client.publish(topic, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done}), qos=1, retain=False)
 
 
-def publish_item_updated(item_id, title, tags, done):
-    mqtt_client.publish(mqtt_topic_itemUpdated, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done}), qos=1, retain=False)
+def publish_item_updated(item_id, title, tags, done, user_key):
+    topic = f'einkaufsliste/{user_key_part(user_key)}/{mqtt_topic_itemUpdated}'
+    mqtt_client.publish(topic, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done}), qos=1, retain=False)
 
 
-def publish_done_status(item_id, status):
-    mqtt_client.publish(mqtt_topic, json.dumps({'id': item_id, 'status': status}), qos=1, retain=False)
+def publish_done_status(item_id, status, user_key):
+    topic = f'einkaufsliste/{user_key_part(user_key)}/{mqtt_topic}'
+    mqtt_client.publish(topic, json.dumps({'id': item_id, 'status': status}), qos=1, retain=False)
 
 
-def publish_item_deleted(item_id):
-    mqtt_client.publish(mqtt_topic_itemDeleted, json.dumps({'id': item_id}), qos=1, retain=False)
+def publish_item_deleted(item_id, user_key):
+    topic = f'einkaufsliste/{user_key_part(user_key)}/{mqtt_topic_itemDeleted}'
+    mqtt_client.publish(topic, json.dumps({'id': item_id}), qos=1, retain=False)
 
+
+def user_key_part(user_key):
+    """Extract a small part of the user key that can be safely sent to the MQTT broker (e.g. as topic prefix)"""
+    # return the first 8 characters of the key, if it is at least 16 characters long
+    if len(user_key) < 16:
+        raise ValueError("User key is too short, has to be at least 16 characters")
+
+    return user_key[:8]
 
 def add_done_status_to_redis(item_id, status, user_key):
     int_status = int(status)
     
     r.set(f'{user_key}:items:{item_id}:done', str(int_status))
-    publish_done_status(item_id, status)
+    publish_done_status(item_id, status, user_key)
 
 
 def get_done_status_from_redis(item_id, user_key):
