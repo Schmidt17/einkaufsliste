@@ -83,16 +83,8 @@ def index():
     if api_key is None:
         api_key = ""
 
-    listnames = []
-    for i, key in enumerate(r.scan_iter(match='lists:*')):
-        m = re.match(r'lists:(.*)', key)
-        listname = m.group(1)
-        
-        listnames.append(listname)
-
-    return render_template('index.html', 
-        listnames=listnames, 
-        api_key=api_key, 
+    return render_template('index.html',
+        api_key=api_key,
         url_root=url_root,
         mqtt_topic=mqtt_topic,
         mqtt_topic_newItem=mqtt_topic_newItem
@@ -101,12 +93,14 @@ def index():
 
 @app.get("/api/v1/items")
 def get_items():
+    user_key = request.args.get("k")
+
     # retreive the data in case of successful authorization
-    item_ids = get_item_ids_from_redis()
-    titles = map(get_title_from_redis, item_ids)
-    item_tags = map(get_item_tags_from_redis, item_ids)
+    item_ids = get_item_ids_from_redis(user_key)
+    titles = map(partial(get_title_from_redis, user_key=user_key), item_ids)
+    item_tags = map(partial(get_item_tags_from_redis, user_key=user_key), item_ids)
     item_tags = map(list, item_tags)
-    dones = map(get_done_status_from_redis, item_ids)
+    dones = map(partial(get_done_status_from_redis, user_key=user_key), item_ids)
 
     items = [{'id': item_id, 'title': title, 'tags': tags, 'done': done} 
              for item_id, title, tags, done in zip(item_ids, titles, item_tags, dones)]
@@ -116,14 +110,18 @@ def get_items():
 
 @app.post("/api/v1/items")
 def post_item():
-    new_id = add_item(request.json['itemData'])
+    user_key = request.args.get("k")
+
+    new_id = add_item(request.json['itemData'], user_key)
 
     return {'success': True, 'newId': new_id}
 
 
 @app.route("/api/v1/items/<item_id>", methods=["DELETE"])
 def delete_item(item_id):
-    delete_item_from_redis(item_id)
+    user_key = request.args.get("k")
+
+    delete_item_from_redis(item_id, user_key)
 
     publish_item_deleted(item_id)
 
@@ -132,13 +130,17 @@ def delete_item(item_id):
 
 @app.get("/api/v1/tags")
 def get_tags():
-    tags = get_all_tags_from_redis()
+    user_key = request.args.get("k")
+
+    tags = get_all_tags_from_redis(user_key)
     return {'tags': list(tags)}
 
 
 @app.route("/api/v1/items/<item_id>", methods=['UPDATE'])
 def update_item(item_id):
-    new_item_data = update_item_in_redis(item_id, request.json['itemData'])
+    user_key = request.args.get("k")
+
+    new_item_data = update_item_in_redis(item_id, request.json['itemData'], user_key)
 
     publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'])
 
@@ -147,8 +149,10 @@ def update_item(item_id):
 
 @app.route("/api/v1/items/<item_id>/done", methods=['GET', 'UPDATE'])
 def done_status(item_id):
+    user_key = request.args.get("k")
+
     if request.method == 'GET':
-        status = get_done_status_from_redis(item_id)
+        status = get_done_status_from_redis(item_id, user_key)
         if status:
             done = 1
         else:
@@ -156,13 +160,13 @@ def done_status(item_id):
 
         return {'done': done}
     else:
-        add_done_status_to_redis(item_id, request.json['done'])
+        add_done_status_to_redis(item_id, request.json['done'], user_key)
 
         return {'success': True}
 
 
-def get_all_tags_from_redis():
-    all_tags = r.smembers('tags')
+def get_all_tags_from_redis(user_key):
+    all_tags = r.smembers(f'{user_key}:tags')
 
     if all_tags is None:
         return set()
@@ -170,33 +174,33 @@ def get_all_tags_from_redis():
         return all_tags
 
 
-def delete_item_from_redis(item_id):
+def delete_item_from_redis(item_id, user_key):
     # delete entry from items sorted set
-    r.zrem('items', item_id)
+    r.zrem(f'{user_key}:items', item_id)
 
     # delete title
-    r.delete(f'items:{item_id}:title')
+    r.delete(f'{user_key}:items:{item_id}:title')
 
     # delete tags
-    r.delete(f'items:{item_id}:tags')
+    r.delete(f'{user_key}:items:{item_id}:tags')
     # update the global tags set
-    update_tags_set_in_redis()
+    update_tags_set_in_redis(user_key)
 
 
-def update_tags_set_in_redis():
+def update_tags_set_in_redis(user_key):
     # get all item IDs
-    item_ids = get_item_ids_from_redis()
+    item_ids = get_item_ids_from_redis(user_key)
     # construct all tag keys from the item ids
-    tag_keys = [f'items:{item_id}:tags' for item_id in item_ids]
+    tag_keys = [f'{user_key}:items:{item_id}:tags' for item_id in item_ids]
 
     if len(tag_keys) > 0:
         # store the union of all tag sets in the global tag set
-        r.sunionstore('tags', *tag_keys)
+        r.sunionstore(f'{user_key}:tags', *tag_keys)
     else:
-        r.delete('tags')
+        r.delete(f'{user_key}:tags')
 
 
-def update_item_in_redis(item_id, item_data):
+def update_item_in_redis(item_id, item_data, user_key):
 
     new_item_data = {
         'id': item_id,
@@ -210,9 +214,9 @@ def update_item_in_redis(item_id, item_data):
 
     # update tags
     # delete old tags
-    r.delete(f'items:{item_id}:tags')
+    r.delete(f'{user_key}:items:{item_id}:tags')
     # update the global tags set in case some tags vanished
-    update_tags_set_in_redis()
+    update_tags_set_in_redis(user_key)
     # add in the new tags
     add_tags_to_redis(item_id, new_item_data['tags'])
 
@@ -222,7 +226,7 @@ def update_item_in_redis(item_id, item_data):
     return new_item_data
 
 
-def add_item(item_data):
+def add_item(item_data, user_key):
     # create new ID
     new_id = str(uuid.uuid4())
 
@@ -251,12 +255,12 @@ def add_item(item_data):
     return new_id
 
 
-def get_item_ids_from_redis():
-    return r.zrange('items', 0, -1)
+def get_item_ids_from_redis(user_key):
+    return r.zrange(f'{user_key}:items', 0, -1)
 
 
-def get_highscore_item_from_redis():
-    items = r.zrange('items', 0, 0, desc=True, withscores=True)
+def get_highscore_item_from_redis(user_key):
+    items = r.zrange(f'{user_key}:items', 0, 0, desc=True, withscores=True)
 
     if items:
         return items[0]
@@ -264,12 +268,12 @@ def get_highscore_item_from_redis():
         return None, None
 
 
-def add_item_to_redis(item_id, score):
-    r.zadd('items', {item_id: score})
+def add_item_to_redis(item_id, score, user_key):
+    r.zadd(f'{user_key}:items', {item_id: score})
 
 
-def add_title_to_redis(item_id, title):
-    r.set(f'items:{item_id}:title', title)
+def add_title_to_redis(item_id, title, user_key):
+    r.set(f'{user_key}:items:{item_id}:title', title)
 
 
 def publish_new_item(item_id, title, tags, done):
@@ -288,29 +292,29 @@ def publish_item_deleted(item_id):
     mqtt_client.publish(mqtt_topic_itemDeleted, json.dumps({'id': item_id}), qos=1, retain=False)
 
 
-def add_done_status_to_redis(item_id, status):
+def add_done_status_to_redis(item_id, status, user_key):
     int_status = int(status)
     
-    r.set(f'items:{item_id}:done', str(int_status))
+    r.set(f'{user_key}:items:{item_id}:done', str(int_status))
     publish_done_status(item_id, status)
 
 
-def get_done_status_from_redis(item_id):
-    return int(r.get(f'items:{item_id}:done'))
+def get_done_status_from_redis(item_id, user_key):
+    return int(r.get(f'{user_key}:items:{item_id}:done'))
 
 
-def add_tags_to_redis(item_id, tags):
+def add_tags_to_redis(item_id, tags, user_key):
     for tag in tags:
-        r.sadd('tags', tag)  # add to global tag set
-        r.sadd(f'items:{item_id}:tags', tag)  # add to item tag set
+        r.sadd(f'{user_key}:tags', tag)  # add to global tag set
+        r.sadd(f'{user_key}:items:{item_id}:tags', tag)  # add to item tag set
 
 
-def get_title_from_redis(item_id):
-    return r.get(f'items:{item_id}:title')
+def get_title_from_redis(item_id, user_key):
+    return r.get(f'{user_key}:items:{item_id}:title')
 
 
-def get_item_tags_from_redis(item_id):
-    return r.smembers(f'items:{item_id}:tags')
+def get_item_tags_from_redis(item_id, user_key):
+    return r.smembers(f'{user_key}:items:{item_id}:tags')
 
 
 def safe_isin(x, collection):
