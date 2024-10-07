@@ -86,8 +86,8 @@ def index():
     return render_template('index.html',
         api_key=api_key,
         url_root=url_root,
-        mqtt_topic=mqtt_topic,
-        mqtt_topic_newItem=mqtt_topic_newItem
+        mqtt_topic=f'einkaufsliste/{user_key_part(user_key)}/{mqtt_topic}',
+        mqtt_topic_newItem=f'einkaufsliste/{user_key_part(user_key)}/{mqtt_topic_newItem}'
     )
 
 
