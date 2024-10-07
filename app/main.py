@@ -32,10 +32,10 @@ else:
 
     url_root = 'einkaufsliste'
 
-    mqtt_topic = "einkaufsliste_doneUpdates"
-    mqtt_topic_newItem = "einkaufsliste_newItem"
-    mqtt_topic_itemDeleted = "einkaufsliste_itemDeleted"
-    mqtt_topic_itemUpdated = "einkaufsliste_itemUpdated"
+    mqtt_topic = "doneUpdates"
+    mqtt_topic_newItem = "newItem"
+    mqtt_topic_itemDeleted = "itemDeleted"
+    mqtt_topic_itemUpdated = "itemUpdated"
 
 
 debug = False
