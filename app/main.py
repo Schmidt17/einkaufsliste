@@ -210,7 +210,7 @@ def update_item_in_redis(item_id, item_data, user_key):
     }
 
     # update title
-    add_title_to_redis(item_id, new_item_data['title'])
+    add_title_to_redis(item_id, new_item_data['title'], user_key)
 
     # update tags
     # delete old tags
@@ -218,10 +218,10 @@ def update_item_in_redis(item_id, item_data, user_key):
     # update the global tags set in case some tags vanished
     update_tags_set_in_redis(user_key)
     # add in the new tags
-    add_tags_to_redis(item_id, new_item_data['tags'])
+    add_tags_to_redis(item_id, new_item_data['tags'], user_key)
 
     # set done to false
-    add_done_status_to_redis(item_id, new_item_data['done'])
+    add_done_status_to_redis(item_id, new_item_data['done'], user_key)
 
     return new_item_data
 
@@ -232,22 +232,22 @@ def add_item(item_data, user_key):
 
     # add ID to item ordered set
     # find current highest score
-    high_id, high_score = get_highscore_item_from_redis()
+    high_id, high_score = get_highscore_item_from_redis(user_key)
     # increment score (if any) and add item
     if high_score is None:
         new_score = 0
     else:
         new_score = high_score + 1
-    add_item_to_redis(new_id, new_score)
+    add_item_to_redis(new_id, new_score, user_key)
 
     # add title
-    add_title_to_redis(new_id, item_data['title'])
+    add_title_to_redis(new_id, item_data['title'], user_key)
 
     # add tags
-    add_tags_to_redis(new_id, item_data['tags'])
+    add_tags_to_redis(new_id, item_data['tags'], user_key)
 
     # set done status to false
-    add_done_status_to_redis(new_id, 0)
+    add_done_status_to_redis(new_id, 0, user_key)
 
     # publish to clients that a new item was added
     publish_new_item(new_id, item_data['title'], item_data['tags'], 0)
