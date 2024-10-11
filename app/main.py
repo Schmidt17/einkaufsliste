@@ -115,9 +115,9 @@ def get_items():
 def post_item():
     user_key = request.args.get("k")
 
-    new_id = add_item(request.json['itemData'], user_key)
+    new_id, new_revision = add_item(request.json['itemData'], user_key)
 
-    return {'success': True, 'newId': new_id}
+    return {'success': True, 'newId': new_id, 'revision': new_revision}
 
 
 @app.route("/api/v1/items/<item_id>", methods=["DELETE"])
@@ -147,7 +147,7 @@ def update_item(item_id):
 
     publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], new_item_data['revision'], user_key)
 
-    return {'success': True}
+    return {'success': True, 'revision': new_item_data['revision']}
 
 
 @app.route("/api/v1/items/<item_id>/done", methods=['GET', 'UPDATE'])
@@ -270,7 +270,7 @@ def add_item(item_data, user_key):
     # publish to clients that a new item was added
     publish_new_item(new_id, item_data['title'], item_data['tags'], new_done_status, new_revision_number, user_key)
 
-    return new_id
+    return new_id, new_revision_number
 
 
 def increment_revision_number_in_redis(item_id, user_key):
