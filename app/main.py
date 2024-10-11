@@ -265,7 +265,7 @@ def add_item(item_data, user_key):
 
     # add revision number 0
     increment_revision_number_in_redis(new_id, user_key)
-    new_revision_number = get_revision_number_from_redis(item_id, user_key)
+    new_revision_number = get_revision_number_from_redis(new_id, user_key)
 
     # publish to clients that a new item was added
     publish_new_item(new_id, item_data['title'], item_data['tags'], new_done_status, new_revision_number, user_key)
