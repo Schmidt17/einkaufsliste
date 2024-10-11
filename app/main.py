@@ -278,7 +278,12 @@ def increment_revision_number_in_redis(item_id, user_key):
     r.incr(f'{user_key}:items:{item_id}:revision')
 
 def get_revision_number_from_redis(item_id, user_key):
-    return r.get(f'{user_key}:items:{item_id}:revision')
+    rev = r.get(f'{user_key}:items:{item_id}:revision')
+
+    try:
+        return int(rev)
+    except TypeError:
+        return None
 
 
 def get_item_ids_from_redis(user_key):
