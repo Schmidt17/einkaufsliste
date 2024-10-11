@@ -263,7 +263,7 @@ def add_item(item_data, user_key):
     new_done_status = 0
     add_done_status_to_redis(new_id, new_done_status, user_key)
 
-    # add revision number 0
+    # add revision number 1
     increment_revision_number_in_redis(new_id, user_key)
     new_revision_number = get_revision_number_from_redis(new_id, user_key)
 
