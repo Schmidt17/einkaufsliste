@@ -97,15 +97,16 @@ def index():
 def get_items():
     user_key = request.args.get("k")
 
-    # retreive the data in case of successful authorization
+    # retrieve the data in case of successful authorization
     item_ids = get_item_ids_from_redis(user_key)
     titles = map(partial(get_title_from_redis, user_key=user_key), item_ids)
     item_tags = map(partial(get_item_tags_from_redis, user_key=user_key), item_ids)
     item_tags = map(list, item_tags)
     dones = map(partial(get_done_status_from_redis, user_key=user_key), item_ids)
+    revisions = map(partial(get_revision_number_from_redis, user_key=user_key), item_ids)
 
-    items = [{'id': item_id, 'title': title, 'tags': tags, 'done': done} 
-             for item_id, title, tags, done in zip(item_ids, titles, item_tags, dones)]
+    items = [{'id': item_id, 'title': title, 'tags': tags, 'done': done, 'revision': revision}
+             for item_id, title, tags, done, revision in zip(item_ids, titles, item_tags, dones, revisions)]
 
     return json.dumps(items)
 
@@ -144,7 +145,7 @@ def update_item(item_id):
 
     new_item_data = update_item_in_redis(item_id, request.json['itemData'], user_key)
 
-    publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], user_key)
+    publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], new_item_data['revision'], user_key)
 
     return {'success': True}
 
@@ -191,6 +192,9 @@ def delete_item_from_redis(item_id, user_key):
     # update the global tags set
     update_tags_set_in_redis(user_key)
 
+    # delete revision
+    r.delete(f'{user_key}:items:{item_id}:revision')
+
 
 def update_tags_set_in_redis(user_key):
     # get all item IDs
@@ -224,6 +228,10 @@ def update_item_in_redis(item_id, item_data, user_key):
     update_tags_set_in_redis(user_key)
     # add in the new tags
     add_tags_to_redis(item_id, new_item_data['tags'], user_key)
+    # increment the revision number
+    increment_revision_number_in_redis(item_id, user_key)
+
+    new_item_data['revision'] = get_revision_number_from_redis(item_id, user_key)
 
     # set done to false
     add_done_status_to_redis(item_id, new_item_data['done'], user_key)
@@ -252,12 +260,25 @@ def add_item(item_data, user_key):
     add_tags_to_redis(new_id, item_data['tags'], user_key)
 
     # set done status to false
-    add_done_status_to_redis(new_id, 0, user_key)
+    new_done_status = 0
+    add_done_status_to_redis(new_id, new_done_status, user_key)
+
+    # add revision number 0
+    increment_revision_number_in_redis(new_id, user_key)
+    new_revision_number = get_revision_number_from_redis(item_id, user_key)
 
     # publish to clients that a new item was added
-    publish_new_item(new_id, item_data['title'], item_data['tags'], 0, user_key)
+    publish_new_item(new_id, item_data['title'], item_data['tags'], new_done_status, new_revision_number, user_key)
 
     return new_id
+
+
+def increment_revision_number_in_redis(item_id, user_key):
+    # sets the value to 0 if the key does not exist
+    r.incr(f'{user_key}:items:{item_id}:revision')
+
+def get_revision_number_from_redis(item_id, user_key):
+    return r.get(f'{user_key}:items:{item_id}:revision')
 
 
 def get_item_ids_from_redis(user_key):
@@ -281,14 +302,14 @@ def add_title_to_redis(item_id, title, user_key):
     r.set(f'{user_key}:items:{item_id}:title', title)
 
 
-def publish_new_item(item_id, title, tags, done, user_key):
+def publish_new_item(item_id, title, tags, done, revision, user_key):
     topic = f'einkaufsliste/{user_key_part(user_key)}/{mqtt_topic_newItem}'
-    mqtt_client.publish(topic, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done}), qos=1, retain=False)
+    mqtt_client.publish(topic, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done, 'revision': revision}), qos=1, retain=False)
 
 
-def publish_item_updated(item_id, title, tags, done, user_key):
+def publish_item_updated(item_id, title, tags, done, revision, user_key):
     topic = f'einkaufsliste/{user_key_part(user_key)}/{mqtt_topic_itemUpdated}'
-    mqtt_client.publish(topic, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done}), qos=1, retain=False)
+    mqtt_client.publish(topic, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done, 'revision': revision}), qos=1, retain=False)
 
 
 def publish_done_status(item_id, status, user_key):
