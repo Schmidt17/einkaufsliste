@@ -302,10 +302,11 @@ def update_item_in_redis(item_id, item_data, user_key, done=0):
     # only update in case of changes
     old_item_data = {
         'title': get_title_from_redis(item_id, user_key),
-        'tags': get_item_tags_from_redis(item_id, user_key)
+        'tags': get_item_tags_from_redis(item_id, user_key),
+        'done': get_done_status_from_redis(item_id, user_key)
     }
 
-    if (item_data['title'] == old_item_data['title']) and (set(item_data['tags']) == old_item_data['tags']):
+    if (item_data['title'] == old_item_data['title']) and (set(item_data['tags']) == old_item_data['tags']) and (done == old_item_data['done']):
         return item_data
 
     new_item_data = {
@@ -330,7 +331,6 @@ def update_item_in_redis(item_id, item_data, user_key, done=0):
 
     new_item_data['revision'] = get_revision_number_from_redis(item_id, user_key)
 
-    # set done to false
     add_done_status_to_redis(item_id, new_item_data['done'], user_key)
 
     publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], new_item_data['revision'], user_key)
