@@ -293,7 +293,7 @@ def update_item_in_redis(item_id, item_data, user_key, done=0):
 
     # only update in case of changes
     old_item_data = {
-        'title': get_title_from_redis(item_id, user_key)
+        'title': get_title_from_redis(item_id, user_key),
         'tags': get_item_tags_from_redis(item_id, user_key)
     }
     if (new_item_data['title'] == old_item_data['title']) and (new_item_data['tags'] == old_item_data['tags']):
