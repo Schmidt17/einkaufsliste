@@ -156,7 +156,6 @@ def sync_items():
 
     for item in items_to_update:
         new_item_data = update_item_in_redis(item['id'], item, user_key, done=item['done'])
-        publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], new_item_data['revision'], user_key)
 
     # find client items with older revision but newer state than the server and create separate items for the two versions
     desynced_items = [
@@ -217,8 +216,6 @@ def update_item(item_id):
     user_key = request.args.get("k")
 
     new_item_data = update_item_in_redis(item_id, request.json['itemData'], user_key)
-
-    publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], new_item_data['revision'], user_key)
 
     return {'success': True, 'revision': new_item_data['revision']}
 
@@ -322,6 +319,8 @@ def update_item_in_redis(item_id, item_data, user_key, done=0):
 
     # set done to false
     add_done_status_to_redis(item_id, new_item_data['done'], user_key)
+
+    publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], new_item_data['revision'], user_key)
 
     return new_item_data
 
