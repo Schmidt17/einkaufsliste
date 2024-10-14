@@ -132,6 +132,7 @@ def get_items_from_redis(user_key):
 @app.post("/api/v1/items/sync")
 def sync_items():
     user_key = request.args.get("k")
+    client_id = request.args.get("c")
 
     client_items = request.json['clientItems']
     server_items = get_items_from_redis(user_key)
@@ -169,7 +170,7 @@ def sync_items():
     print("Desynced")
     print(desynced_items)
     for item in desynced_items:
-        new_id, new_revision = add_item(item, user_key, done=item['done'])
+        new_id, new_revision = add_item(item, user_key, client_id, done=item['done'])
 
     # find unsynced client items that do not exist on the server and add them
     items_to_add = [
@@ -181,7 +182,7 @@ def sync_items():
     print("To add:")
     print(items_to_add)
     for item in items_to_add:
-        new_id, new_revision = add_item(item, user_key, done=item['done'])
+        new_id, new_revision = add_item(item, user_key, client_id, done=item['done'])
 
     # get the new server item list and send it back to the client
     new_server_items = get_items_from_redis(user_key)
@@ -192,8 +193,9 @@ def sync_items():
 @app.post("/api/v1/items")
 def post_item():
     user_key = request.args.get("k")
+    client_id = request.args.get("c")
 
-    new_id, new_revision = add_item(request.json['itemData'], user_key)
+    new_id, new_revision = add_item(request.json['itemData'], user_key, client_id)
 
     return {'success': True, 'newId': new_id, 'revision': new_revision}
 
@@ -325,7 +327,7 @@ def update_item_in_redis(item_id, item_data, user_key, done=0):
     return new_item_data
 
 
-def add_item(item_data, user_key, done=0):
+def add_item(item_data, user_key, client_id, done=0):
     # create new ID
     new_id = str(uuid.uuid4())
 
@@ -354,7 +356,7 @@ def add_item(item_data, user_key, done=0):
     new_revision_number = get_revision_number_from_redis(new_id, user_key)
 
     # publish to clients that a new item was added
-    publish_new_item(new_id, item_data['title'], item_data['tags'], new_done_status, new_revision_number, user_key)
+    publish_new_item(new_id, item_data['title'], item_data['tags'], new_done_status, new_revision_number, user_key, client_id)
 
     return new_id, new_revision_number
 
@@ -393,9 +395,9 @@ def add_title_to_redis(item_id, title, user_key):
     r.set(f'{user_key}:items:{item_id}:title', title)
 
 
-def publish_new_item(item_id, title, tags, done, revision, user_key):
+def publish_new_item(item_id, title, tags, done, revision, user_key, client_id):
     topic = f'einkaufsliste/{user_key_part(user_key)}/{mqtt_topic_newItem}'
-    mqtt_client.publish(topic, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done, 'revision': revision}), qos=1, retain=False)
+    mqtt_client.publish(topic, json.dumps({'id': item_id, 'title': title, 'tags': tags, 'done': done, 'revision': revision, 'clientId': client_id}), qos=1, retain=False)
 
 
 def publish_item_updated(item_id, title, tags, done, revision, user_key):
