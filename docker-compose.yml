@@ -8,14 +8,14 @@ services:
     command: redis-server --appendonly yes --maxmemory 512mb --tcp-backlog 128
     restart: always
   server:
-    image: einkaufsliste-multiuser/webapp
+    image: einkaufsliste-multiuser-test/webapp
     environment:
-      - DEPLOY_ENVIRONMENT=production
+      - DEPLOY_ENVIRONMENT=test
     build: .
     volumes:
       - ./app:/app
     ports:
-      - "8083:80"
+      - "8084:80"
     restart: always
     depends_on:
       - redis

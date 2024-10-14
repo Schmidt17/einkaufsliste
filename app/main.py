@@ -13,12 +13,9 @@ from functools import partial
 from config import authorized_keys
 
 
-STAGING = True
-if 'DEPLOY_ENVIRONMENT' in os.environ:
-    if os.environ['DEPLOY_ENVIRONMENT'] == 'production':
-        STAGING = False
+DEPLOY_ENVIRONMENT = os.environ.get('DEPLOY_ENVIRONMENT')
 
-if STAGING:
+if DEPLOY_ENVIRONMENT == 'stage':
     REDIS_NAME = 'redis-stage'
     REDIS_PORT = 6379
 
@@ -28,7 +25,19 @@ if STAGING:
     mqtt_topic_newItem = "einkaufsliste_newItem_stage"
     mqtt_topic_itemDeleted = "einkaufsliste_itemDeleted_stage"
     mqtt_topic_itemUpdated = "einkaufsliste_itemUpdated_stage"
-else:
+
+elif DEPLOY_ENVIRONMENT == 'test':
+    REDIS_NAME = 'redis'
+    REDIS_PORT = 6379
+
+    url_root = 'einkaufsliste-multiuser-test'
+
+    mqtt_topic = "doneUpdates"
+    mqtt_topic_newItem = "newItem"
+    mqtt_topic_itemDeleted = "itemDeleted"
+    mqtt_topic_itemUpdated = "itemUpdated"
+
+elif DEPLOY_ENVIRONMENT == 'production':
     REDIS_NAME = 'redis'
     REDIS_PORT = 6379
 
@@ -38,6 +47,9 @@ else:
     mqtt_topic_newItem = "newItem"
     mqtt_topic_itemDeleted = "itemDeleted"
     mqtt_topic_itemUpdated = "itemUpdated"
+
+else:
+    raise RuntimeError(f"Environment variable DEPLOY_ENVIRONMENT was not set to 'test', 'stage' or 'production', but to '{DEPLOY_ENVIRONMENT}'")
 
 
 debug = False
