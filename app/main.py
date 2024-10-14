@@ -155,8 +155,6 @@ def sync_items():
         if (item['server'] is not None) and (item['client']['lastSyncedRevision'] == item['server']['revision'])
     ]
 
-    print("To update:")
-    print(items_to_update)
     for item in items_to_update:
         new_item_data = update_item_in_redis(item['id'], item, user_key, done=item['done'])
 
@@ -167,8 +165,6 @@ def sync_items():
         if (item['server'] is not None) and (not item['client']['synced']) and (item['client']['lastSyncedRevision'] < item['server']['revision'])
     ]
 
-    print("Desynced")
-    print(desynced_items)
     for item in desynced_items:
         new_id, new_revision = add_item(item, user_key, client_id, done=item['done'])
 
@@ -179,8 +175,6 @@ def sync_items():
         if (item['server'] is None) and (not item['client']['synced'])
     ]
 
-    print("To add:")
-    print(items_to_add)
     # store the new Ids to communicate the mapping between old and new back to the client
     old_ids = [item['id'] for item in items_to_add]
     added_ids = []
@@ -307,13 +301,6 @@ def update_item_in_redis(item_id, item_data, user_key, done=0):
         'done': get_done_status_from_redis(item_id, user_key),
         'revision': get_revision_number_from_redis(item_id, user_key)
     }
-
-    print("Item Data:")
-    print(item_data)
-
-    print()
-    print("Old item data:")
-    print(old_item_data)
 
     inc_rev_number = True
     if (item_data['title'] == old_item_data['title']) and (set(item_data['tags']) == old_item_data['tags']):
