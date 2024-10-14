@@ -172,11 +172,11 @@ def sync_items():
         new_item_data = update_item_in_redis(item['id'], item, user_key, done=item['done'])
         publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], new_item_data['revision'], user_key)
 
-    # find client items that do not exist on the server and add them
+    # find unsynced client items that do not exist on the server and add them
     items_to_add = [
         item['client']
         for item in matched_items.values()
-        if item['server'] is None
+        if (item['server'] is None) and (not item['client']['synced'])
     ]
 
     for item in items_to_add:
