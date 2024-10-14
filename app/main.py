@@ -144,7 +144,7 @@ def sync_items():
     matched_items = {
         key: {'client': item, 'server': server_dict.get(key)}
 
-        for key, item in client_items.items()
+        for key, item in client_dict.items()
     }
 
     # find client items with the same revision as the server and update their data on the server
