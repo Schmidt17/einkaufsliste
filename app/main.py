@@ -307,7 +307,11 @@ def update_item_in_redis(item_id, item_data, user_key, done=0):
         'revision': get_revision_number_from_redis(item_id, user_key)
     }
 
-    if (item_data['title'] == old_item_data['title']) and (set(item_data['tags']) == old_item_data['tags']) and (done == old_item_data['done']):
+    inc_rev_number = True
+    if (item_data['title'] == old_item_data['title']) and (set(item_data['tags']) == old_item_data['tags']):
+        inc_rev_number = False
+
+    if inc_rev_number and (done == old_item_data['done']):
         return old_item_data
 
     new_item_data = {
@@ -327,8 +331,10 @@ def update_item_in_redis(item_id, item_data, user_key, done=0):
     update_tags_set_in_redis(user_key)
     # add in the new tags
     add_tags_to_redis(item_id, new_item_data['tags'], user_key)
-    # increment the revision number
-    increment_revision_number_in_redis(item_id, user_key)
+
+    if inc_rev_number:
+        # increment the revision number
+        increment_revision_number_in_redis(item_id, user_key)
 
     new_item_data['revision'] = get_revision_number_from_redis(item_id, user_key)
 
