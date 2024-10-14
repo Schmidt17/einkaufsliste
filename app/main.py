@@ -181,11 +181,22 @@ def sync_items():
 
     print("To add:")
     print(items_to_add)
+    # store the new Ids to communicate the mapping between old and new back to the client
+    old_ids = [item['id'] for item in items_to_add]
+    added_ids = []
     for item in items_to_add:
         new_id, new_revision = add_item(item, user_key, client_id, done=item['done'])
+        added_ids.append(new_id)
+    new_to_old_ids = {new_id: old_id for new_id, old_id in zip(added_ids, old_ids)}
 
     # get the new server item list and send it back to the client
     new_server_items = get_items_from_redis(user_key)
+    for item in new_server_items:
+        if item['id'] in new_to_old_ids:
+            item['oldId'] = new_to_old_ids[item['id']]
+
+        else:
+            item['oldId'] = None
 
     return json.dumps(new_server_items)
 
