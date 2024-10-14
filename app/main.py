@@ -307,11 +307,18 @@ def update_item_in_redis(item_id, item_data, user_key, done=0):
         'revision': get_revision_number_from_redis(item_id, user_key)
     }
 
+    print("Item Data:")
+    print(item_data)
+
+    print()
+    print("Old item data:")
+    print(old_item_data)
+
     inc_rev_number = True
     if (item_data['title'] == old_item_data['title']) and (set(item_data['tags']) == old_item_data['tags']):
         inc_rev_number = False
 
-    if inc_rev_number and (done == old_item_data['done']):
+    if (not inc_rev_number) and (done == old_item_data['done']):
         return old_item_data
 
     new_item_data = {
