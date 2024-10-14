@@ -158,6 +158,20 @@ def sync_items():
         new_item_data = update_item_in_redis(item['id'], item, user_key, done=item['done'])
         publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], new_item_data['revision'], user_key)
 
+    # find client items with older revision but newer state than the server and create separate items for the two versions
+    desynced_items = [
+        item['client']
+        for item in matched_items.values()
+        if (item['server'] is not None) and (not item['client']['synced']) and (item['client']['lastSyncedRevision'] < item['server']['revision'])
+    ]
+
+    for item in desynced_items:
+        new_id, new_revision = add_item(item, user_key, done=item['done'])
+
+    for item in items_to_update:
+        new_item_data = update_item_in_redis(item['id'], item, user_key, done=item['done'])
+        publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], new_item_data['revision'], user_key)
+
     # find client items that do not exist on the server and add them
     items_to_add = [
         item['client']
