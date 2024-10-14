@@ -154,6 +154,8 @@ def sync_items():
         if (item['server'] is not None) and (item['client']['lastSyncedRevision'] == item['server']['revision'])
     ]
 
+    print("To update:")
+    print(items_to_update)
     for item in items_to_update:
         new_item_data = update_item_in_redis(item['id'], item, user_key, done=item['done'])
 
@@ -164,6 +166,8 @@ def sync_items():
         if (item['server'] is not None) and (not item['client']['synced']) and (item['client']['lastSyncedRevision'] < item['server']['revision'])
     ]
 
+    print("Desynced")
+    print(desynced_items)
     for item in desynced_items:
         new_id, new_revision = add_item(item, user_key, done=item['done'])
 
@@ -174,6 +178,8 @@ def sync_items():
         if (item['server'] is None) and (not item['client']['synced'])
     ]
 
+    print("To add:")
+    print(items_to_add)
     for item in items_to_add:
         new_id, new_revision = add_item(item, user_key, done=item['done'])
 
