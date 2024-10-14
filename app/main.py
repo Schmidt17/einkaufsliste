@@ -110,6 +110,12 @@ def get_items():
     user_key = request.args.get("k")
 
     # retrieve the data in case of successful authorization
+    items = get_items_from_redis(user_key)
+
+    return json.dumps(items)
+
+
+def get_items_from_redis(user_key):
     item_ids = get_item_ids_from_redis(user_key)
     titles = map(partial(get_title_from_redis, user_key=user_key), item_ids)
     item_tags = map(partial(get_item_tags_from_redis, user_key=user_key), item_ids)
@@ -120,7 +126,52 @@ def get_items():
     items = [{'id': item_id, 'title': title, 'tags': tags, 'done': done, 'revision': revision}
              for item_id, title, tags, done, revision in zip(item_ids, titles, item_tags, dones, revisions)]
 
-    return json.dumps(items)
+    return items
+
+
+@app.post("/api/v1/items/sync")
+def sync_items():
+    user_key = request.args.get("k")
+
+    client_items = request.json['clientItems']
+    server_items = get_items_from_redis(user_key)
+
+    # turn both lists into dicts, indexed by ID
+    client_dict = {item['id']: item for item in client_items}
+    server_dict = {item['id']: item for item in server_items}
+
+    # match up client and server items based on their IDs
+    matched_items = {
+        key: {'client': item, 'server': server_dict.get(key)}
+
+        for key, item in client_items.items()
+    }
+
+    # find client items with the same revision as the server and update their data on the server
+    items_to_update = [
+        item['client']
+        for item in matched_items.values()
+        if (item['server'] is not None) and (item['client']['lastSyncedRevision'] == item['server']['revision'])
+    ]
+
+    for item in items_to_update:
+        new_item_data = update_item_in_redis(item['id'], item, user_key, done=item['done'])
+        publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], new_item_data['revision'], user_key)
+
+    # find client items that do not exist on the server and add them
+    items_to_add = [
+        item['client']
+        for item in matched_items.values()
+        if item['server'] is None
+    ]
+
+    for item in items_to_add:
+        new_id, new_revision = add_item(item, user_key, done=item['done'])
+
+    # get the new server item list and send it back to the client
+    new_server_items = get_items_from_redis(user_key)
+
+    return json.dumps(new_server_items)
 
 
 @app.post("/api/v1/items")
@@ -221,13 +272,13 @@ def update_tags_set_in_redis(user_key):
         r.delete(f'{user_key}:tags')
 
 
-def update_item_in_redis(item_id, item_data, user_key):
+def update_item_in_redis(item_id, item_data, user_key, done=0):
 
     new_item_data = {
         'id': item_id,
         'title': item_data['title'],
         'tags': item_data['tags'],
-        'done': 0
+        'done': done
     }
 
     # update title
@@ -251,7 +302,7 @@ def update_item_in_redis(item_id, item_data, user_key):
     return new_item_data
 
 
-def add_item(item_data, user_key):
+def add_item(item_data, user_key, done=0):
     # create new ID
     new_id = str(uuid.uuid4())
 
@@ -272,7 +323,7 @@ def add_item(item_data, user_key):
     add_tags_to_redis(new_id, item_data['tags'], user_key)
 
     # set done status to false
-    new_done_status = 0
+    new_done_status = done
     add_done_status_to_redis(new_id, new_done_status, user_key)
 
     # add revision number 1
