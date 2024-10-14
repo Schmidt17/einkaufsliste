@@ -280,27 +280,21 @@ def update_tags_set_in_redis(user_key):
 
 
 def update_item_in_redis(item_id, item_data, user_key, done=0):
-
-    new_item_data = {
-        'id': item_id,
-        'title': item_data['title'],
-        'tags': item_data['tags'],
-        'done': item_data['done']
-    }
-
     # only update in case of changes
     old_item_data = {
         'title': get_title_from_redis(item_id, user_key),
         'tags': get_item_tags_from_redis(item_id, user_key)
     }
 
-    print(new_item_data)
-    print()
-    print(old_item_data)
-    if (new_item_data['title'] == old_item_data['title']) and (set(new_item_data['tags']) == old_item_data['tags']):
-        return new_item_data
+    if (item_data['title'] == old_item_data['title']) and (set(item_data['tags']) == old_item_data['tags']):
+        return item_data
 
-    new_item_data['done'] = done
+    new_item_data = {
+        'id': item_id,
+        'title': item_data['title'],
+        'tags': item_data['tags'],
+        'done': done
+    }
 
     # update title
     add_title_to_redis(item_id, new_item_data['title'], user_key)
