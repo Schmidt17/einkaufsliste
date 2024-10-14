@@ -168,10 +168,6 @@ def sync_items():
     for item in desynced_items:
         new_id, new_revision = add_item(item, user_key, done=item['done'])
 
-    for item in items_to_update:
-        new_item_data = update_item_in_redis(item['id'], item, user_key, done=item['done'])
-        publish_item_updated(new_item_data['id'], new_item_data['title'], new_item_data['tags'], new_item_data['done'], new_item_data['revision'], user_key)
-
     # find unsynced client items that do not exist on the server and add them
     items_to_add = [
         item['client']
@@ -292,8 +288,18 @@ def update_item_in_redis(item_id, item_data, user_key, done=0):
         'id': item_id,
         'title': item_data['title'],
         'tags': item_data['tags'],
-        'done': done
+        'done': item_data['done']
     }
+
+    # only update in case of changes
+    old_item_data = {
+        'title': get_title_from_redis(item_id, user_key)
+        'tags': get_item_tags_from_redis(item_id, user_key)
+    }
+    if (new_item_data['title'] == old_item_data['title']) and (new_item_data['tags'] == old_item_data['tags']):
+        return new_item_data
+
+    new_item_data['done'] = done
 
     # update title
     add_title_to_redis(item_id, new_item_data['title'], user_key)
