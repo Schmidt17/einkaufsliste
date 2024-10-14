@@ -303,11 +303,12 @@ def update_item_in_redis(item_id, item_data, user_key, done=0):
     old_item_data = {
         'title': get_title_from_redis(item_id, user_key),
         'tags': get_item_tags_from_redis(item_id, user_key),
-        'done': get_done_status_from_redis(item_id, user_key)
+        'done': get_done_status_from_redis(item_id, user_key),
+        'revision': get_revision_number_from_redis(item_id, user_key)
     }
 
     if (item_data['title'] == old_item_data['title']) and (set(item_data['tags']) == old_item_data['tags']) and (done == old_item_data['done']):
-        return item_data
+        return old_item_data
 
     new_item_data = {
         'id': item_id,
