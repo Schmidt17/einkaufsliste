@@ -300,7 +300,7 @@ def update_item_in_redis(item_id, item_data, user_key, done=0):
     print(new_item_data)
     print()
     print(old_item_data)
-    if (new_item_data['title'] == old_item_data['title']) and (new_item_data['tags'] == old_item_data['tags']):
+    if (new_item_data['title'] == old_item_data['title']) and (set(new_item_data['tags']) == old_item_data['tags']):
         return new_item_data
 
     new_item_data['done'] = done
