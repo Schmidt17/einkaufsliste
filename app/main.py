@@ -188,9 +188,14 @@ def sync_items():
     for item in new_server_items:
         if item['id'] in new_to_old_ids:
             item['oldId'] = new_to_old_ids[item['id']]
+            item['clientRevisionWas'] = new_to_old_ids[item['id']].get('clientRevision')
 
         else:
             item['oldId'] = None
+            item['clientRevisionWas'] = None
+
+        if item['id'] in matched_items:
+            item['clientRevisionWas'] = matched_items[item['id']].get('clientRevision')
 
     return json.dumps(new_server_items)
 
