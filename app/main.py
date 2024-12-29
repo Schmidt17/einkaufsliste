@@ -188,7 +188,7 @@ def sync_items():
     for item in new_server_items:
         if item['id'] in new_to_old_ids:
             item['oldId'] = new_to_old_ids[item['id']]
-            item['clientRevisionWas'] = new_to_old_ids[item['id']].get('clientRevision')
+            item['clientRevisionWas'] = items_to_add[new_to_old_ids[item['id']]].get('clientRevision')
 
         else:
             item['oldId'] = None
