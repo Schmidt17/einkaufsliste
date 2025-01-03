@@ -195,6 +195,7 @@ def sync_items():
             for old_item in items_to_add:
                 if old_item['id'] == item['oldId']:
                     item['clientRevisionWas'] = old_item.get('clientRevision')
+                    break
 
         # item was on the server before, no oldId is set
         else:
