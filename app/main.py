@@ -186,14 +186,22 @@ def sync_items():
     # get the new server item list and send it back to the client
     new_server_items = get_items_from_redis(user_key)
     for item in new_server_items:
+        # item was completely new and got a new ID from the server -> old ID is communicated back to the client
         if item['id'] in new_to_old_ids:
             item['oldId'] = new_to_old_ids[item['id']]
-            item['clientRevisionWas'] = items_to_add[new_to_old_ids[item['id']]].get('clientRevision')
 
+            # find the old item and set its old client revision
+            item['clientRevisionWas'] = None
+            for old_item in items_to_add:
+                if old_item['id'] == item['oldId']:
+                    item['clientRevisionWas'] = old_item.get('clientRevision')
+
+        # item was on the server before, no oldId is set
         else:
             item['oldId'] = None
             item['clientRevisionWas'] = None
 
+        # item was in both client and server lists -> old client revision is communicated back to the client
         if item['id'] in matched_items:
             item['clientRevisionWas'] = matched_items[item['id']].get('clientRevision')
 
