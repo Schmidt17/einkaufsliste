@@ -1,4 +1,4 @@
-FROM arm32v7/python:3.9-bullseye as base-prod
+FROM arm32v7/python:3.9 as base-prod
 
 WORKDIR /app
 
