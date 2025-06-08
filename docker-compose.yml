@@ -10,7 +10,7 @@ services:
       - REDIS_MASTER_PORT=${REDIS_MASTER_PORT:-}
     volumes:
       - ./redis/data:/data
-    command: redis-server --appendonly yes --maxmemory 512mb --tcp-backlog 128
+    command: redis-server --appendonly yes --maxmemory 512mb --tcp-backlog 128 --replicaof ${REDIS_MASTER_HOST} ${REDIS_MASTER_PORT}
     restart: always
 
   server:
