@@ -25,6 +25,9 @@ services:
       - SENTINEL_ANNOUNCE_PORT=${REDIS_HOST_PORT}
     command: redis-server /etc/redis/sentinel.conf --sentinel
     restart: unless-stopped
+    volumes:
+      - ./sentinel-config/sentinel.conf:/usr/local/etc/redis/sentinel.conf:rw
+      - redis-sentinel-1-data:/data/sentinel
     depends_on:
       - redis
 
