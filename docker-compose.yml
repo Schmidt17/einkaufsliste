@@ -23,7 +23,7 @@ services:
       - SENTINEL_FAILOVER_TIMEOUT=10000
       - SENTINEL_ANNOUNCE_IP=${REDIS_HOST_IP}
       - SENTINEL_ANNOUNCE_PORT=${REDIS_HOST_PORT}
-    command: redis-server --sentinel
+    command: redis-server /etc/redis/sentinel.conf --sentinel
     restart: unless-stopped
     depends_on:
       - redis
