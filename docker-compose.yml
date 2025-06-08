@@ -11,7 +11,22 @@ services:
     volumes:
       - ./redis/data:/data
     command: redis-server --appendonly yes --maxmemory 512mb --tcp-backlog 128 --replicaof ${REDIS_MASTER_HOST} ${REDIS_MASTER_PORT}
-    restart: always
+    restart: unless-stopped
+
+  redis-sentinel:
+    image: arm32v7/redis
+    ports:
+      - "26379:26379"
+    environment:
+      - SENTINEL_MONITOR_MASTER=mymaster ${REDIS_MASTER_HOST:-} ${REDIS_MASTER_PORT:-} 1
+      - SENTINEL_DOWN_AFTER=5000
+      - SENTINEL_FAILOVER_TIMEOUT=10000
+      - SENTINEL_ANNOUNCE_IP=${REDIS_HOST_IP}
+      - SENTINEL_ANNOUNCE_PORT=${REDIS_HOST_PORT}
+    command: redis-server /etc/redis/sentinel.conf --sentinel
+    restart: unless-stopped
+    depends_on:
+      - redis
 
   server:
     image: einkaufsliste-multiuser/webapp
