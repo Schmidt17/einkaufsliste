@@ -26,7 +26,7 @@ services:
     command: redis-server /etc/redis/sentinel.conf --sentinel
     restart: unless-stopped
     volumes:
-      - ./sentinel-config/sentinel.conf:/usr/local/etc/redis/sentinel.conf:rw
+      - ./sentinel-config/sentinel.conf:/etc/redis/sentinel.conf:rw
       - redis-sentinel-1-data:/data/sentinel
     depends_on:
       - redis
