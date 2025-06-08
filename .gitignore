@@ -3,3 +3,4 @@ venv/
 app/config.py
 app/__pycache__/
 notes.md
+.env

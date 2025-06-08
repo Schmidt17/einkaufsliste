@@ -3,6 +3,11 @@ version: "3.9"
 services:
   redis:
     image: arm32v7/redis
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_MASTER_HOST=${REDIS_MASTER_HOST:-}
+      - REDIS_MASTER_PORT=${REDIS_MASTER_PORT:-}
     volumes:
       - ./redis/data:/data
     command: redis-server --appendonly yes --maxmemory 512mb --tcp-backlog 128
