@@ -251,10 +251,6 @@ def update_item(item_id):
 def done_status(item_id):
     user_key = request.args.get("k")
 
-    print("Done status method:", request.method)
-    print("Headers:", request.headers)
-    print("is_json:", request.is_json)
-
     if request.method == 'GET':
         status = get_done_status_from_redis(item_id, user_key)
         if status:
