@@ -6,11 +6,18 @@ services:
     ports:
       - "6379:6379"
     environment:
-      - REDIS_MASTER_HOST=${REDIS_MASTER_HOST:-NO ONE}
+      - REDIS_MASTER_HOST=${REDIS_MASTER_HOST:-}
       - REDIS_MASTER_PORT=${REDIS_MASTER_PORT:-}
     volumes:
       - ./redis/data:/data
-    command: redis-server --appendonly yes --maxmemory 512mb --tcp-backlog 128 --replicaof ${REDIS_MASTER_HOST} ${REDIS_MASTER_PORT}
+    command: >
+      /bin/sh -c "
+      if [ \"$REDIS_MASTER_HOST\" = \"\" ]; then
+        redis-server --appendonly yes --maxmemory 512mb --tcp-backlog 128
+      else
+        redis-server --appendonly yes --maxmemory 512mb --tcp-backlog 128 --replicaof ${REDIS_MASTER_HOST} ${REDIS_MASTER_PORT}
+      fi
+      "
     restart: unless-stopped
 
   redis-sentinel:
