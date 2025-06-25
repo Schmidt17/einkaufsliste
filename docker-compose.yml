@@ -6,7 +6,7 @@ services:
     ports:
       - "6379:6379"
     environment:
-      - REDIS_MASTER_HOST=${REDIS_MASTER_HOST:-}
+      - REDIS_MASTER_HOST=${REDIS_MASTER_HOST:-NO ONE}
       - REDIS_MASTER_PORT=${REDIS_MASTER_PORT:-}
     volumes:
       - ./redis/data:/data
