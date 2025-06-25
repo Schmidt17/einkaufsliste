@@ -58,7 +58,7 @@ if 'FLASK_DEBUG' in os.environ:
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}},
-            methods=["GET", "HEAD", "POST", "UPDATE", "OPTIONS", "PUT", "PATCH", "DELETE"])
+            methods=["GET", "HEAD", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"])
 
 
 if debug:
@@ -238,7 +238,7 @@ def get_tags():
     return {'tags': list(tags)}
 
 
-@app.route("/api/v1/items/<item_id>", methods=['UPDATE'])
+@app.route("/api/v1/items/<item_id>", methods=['PUT'])
 def update_item(item_id):
     user_key = request.args.get("k")
 
@@ -247,7 +247,7 @@ def update_item(item_id):
     return {'success': True, 'revision': new_item_data['revision']}
 
 
-@app.route("/api/v1/items/<item_id>/done", methods=['GET', 'UPDATE'])
+@app.route("/api/v1/items/<item_id>/done", methods=['GET', 'PUT'])
 def done_status(item_id):
     user_key = request.args.get("k")
 
